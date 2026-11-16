@@ -278,3 +278,14 @@ No downloading other channels' videos, no Google Images scraping, only CC0/CC BY
   (it carries information: 50 %); 6 items in a 10-row chart left half the frame empty (rows = min(top, items)); whip-slide
   lists froze 2 s per entry until a slow push and an icon float were added; a music-only mix needs its own loudness pass
   (single-pass loudnorm on a short bed landed at -18.4 LUFS).
+
+- 2026-11-16 · Analysis: `detect_gradual` finds dissolves and fades (midpoint-blend test; a light ramp is rejected because both
+  ends keep their structure) and the analyser lists them as transitions; a second cut detector (PySceneDetect) is compared
+  in `cut_cross_check` (on graphic films it sees only full-frame shot changes: our extra points are content swaps on a shared
+  background). Self-test is now 12/12. `sync_check.py` caught a real fault in the bunker demo: Whisper started every line's
+  first word ~0.4 s early (it absorbs the pause before the line), so line-start events fired before the voice;
+  forced alignment fixed it -> `kit_timing.py` now force-aligns by default when stable-ts is installed.
+- 2026-11-16 · MorphBridge, Whiteboard, AdSpot + ad_variants, LogoReveal + logo_prep. Lessons: open the next world when its
+  bridge object is finished; place the hand by arc length and measure words in their font (an estimate put the hand far
+  ahead); write every optional prop explicitly (missing props silently fell back to the demo's offer text); a dark logo
+  part on a dark ground needs the ink colour for its draw-on line; make the assembly's last part land on the sound-logo beat.

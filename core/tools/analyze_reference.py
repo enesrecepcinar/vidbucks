@@ -452,6 +452,47 @@ def detect_cuts(fr, fps):
         if not out or c - out[-1] >= minimal: out.append(c)
     return out, d, float(floor)
 
+def detect_gradual(fr, fps, cuts):
+    """Dissolves and fades: a cut's pixel spike misses them. Midpoint test: in a dissolve the middle frame equals the average
+    of the frames k before and k after (residual << their difference); in a hard cut it equals one side (residual = half the
+    difference); in a pan the average is a blur of two shifted pictures (high residual). A light ramp also passes the test,
+    so the two ends must differ in STRUCTURE (normalised correlation < 0.75) unless one end is black (that is a fade).
+    Returns [{t, start, end, kind: "dissolve" | "fade to black" | "fade from black", width_frames}]."""
+    g = fr.astype(np.float32).mean(3); n = len(g); hits = []
+    def norm(x): return (x - x.mean()) / (x.std() + 1e-6)
+    for k in sorted({max(2, int(r * fps)) for r in (0.15, 0.25, 0.4, 0.6, 0.8)}):
+        for t in range(k, n - k):
+            A, B, M = g[t - k], g[t + k], g[t]
+            D = float(np.abs(B - A).mean())
+            if D < 14: continue
+            R = float(np.abs(M - 0.5 * (A + B)).mean())
+            if R > 0.16 * D: continue
+            # the frames inside must move steadily from A to B (no hard cut inside the window)
+            alphas = []
+            for j in range(-k + 1, k):
+                X = g[t + j] - A; Y = B - A; alphas.append(float((X * Y).sum() / ((Y * Y).sum() + 1e-6)))
+            if any(b2 < a2 - 0.08 for a2, b2 in zip(alphas, alphas[1:])) or max(np.diff([0] + alphas + [1])) > 0.45: continue
+            dark_a, dark_b = A.mean() < 18 and A.std() < 8, B.mean() < 18 and B.std() < 8
+            if not (dark_a or dark_b) and float((norm(A) * norm(B)).mean()) > 0.75: continue      # same picture brightening: light, not a transition
+            kind = "fade from black" if dark_a else "fade to black" if dark_b else "dissolve"
+            hits.append((t, k, R / D, kind))
+    out = []
+    for t, k, r, kind in sorted(hits, key=lambda h: h[2]):                      # best fit first, then drop overlapping windows
+        if any(abs(t - o["_t"]) <= max(k, o["_k"]) for o in out): continue
+        if any(abs(t - c) <= 1 for c in cuts) and kind == "dissolve": continue  # a hard cut already explains it
+        out.append({"_t": t, "_k": k, "t": round(t / fps, 2), "start": round((t - k) / fps, 2), "end": round((t + k) / fps, 2), "kind": kind, "width_frames": 2 * k})
+    for o in out: o.pop("_t"); o.pop("_k")
+    return sorted(out, key=lambda o: o["t"])
+
+def scenedetect_cuts(path):
+    """second opinion from PySceneDetect (AdaptiveDetector) when it is installed: cut times in seconds, or None"""
+    try:
+        from scenedetect import detect, AdaptiveDetector
+        sc = detect(path, AdaptiveDetector(), show_progress=False)
+        return [round(float(getattr(a, "seconds", None) if getattr(a, "seconds", None) is not None else a.get_seconds()), 2) for a, _ in sc[1:]]
+    except Exception:
+        return None
+
 def audio_mono(path, sr=22050):
     raw = subprocess.run(["ffmpeg", "-v", "error", "-i", path, "-vn", "-ac", "1", "-ar", str(sr), "-f", "f32le", "-"], capture_output=True, timeout=600).stdout
     return np.frombuffer(raw, dtype=np.float32), sr
@@ -533,6 +574,9 @@ def analyze_file(path, lang, want_tr):
     roi = find_roi(fr_full)
     fr = fr_full[:, roi[0]:roi[1], roi[2]:roi[3]] if roi else fr_full
     cuts, d, thr = detect_cuts(fr, fps)
+    grad = detect_gradual(fr, fps, cuts)
+    gmid = {int(round(x["t"] * fps)): x for x in grad}
+    cuts = sorted(set(cuts) | {c for c in gmid if all(abs(c - q) > 2 for q in cuts)})   # a dissolve is a shot change too
     cut_t = [c / fps for c in cuts]
     bounds = [0.0] + cut_t + [pr["duration"]]
     shots = [{"start": round(bounds[i], 2), "end": round(bounds[i + 1], 2), "dur": round(bounds[i + 1] - bounds[i], 2)} for i in range(len(bounds) - 1)]
@@ -570,6 +614,7 @@ def analyze_file(path, lang, want_tr):
             a_, b_ = (a_ - a_.mean()) / (a_.std() + 1e-6), (b_ - b_.mean()) / (b_.std() + 1e-6)
             same = float((a_ * b_).mean())
             if kind != "flash" and same >= 0.7: kind = "jump/seam (same framing)"
+        if c in gmid: kind, wdt = gmid[c]["kind"], gmid[c]["width_frames"]
         trans.append({"t": round(c / fps, 2), "kind": kind, "width_frames": wdt})
     tmix = dict(Counter(t["kind"] for t in trans))
     # takes = what the viewer reads as one shot (jump cuts / generation seams merged); edit points = every cut
@@ -625,6 +670,12 @@ def analyze_file(path, lang, want_tr):
         sheet = Image.new("RGB", (cols * tw, rows * th), "white")
         for i, im in enumerate(thumbs): sheet.paste(im, ((i % cols) * tw, (i // cols) * th))
         sheet.save(os.path.join(out, "sheet.png"))
+    sdc = scenedetect_cuts(path)             # a second detector: where the two disagree, the shot sheets need a human look
+    if sdc is not None:
+        agree = [c for c in cut_t if any(abs(c - x) <= 0.15 for x in sdc)]
+        fp["cut_cross_check"] = {"second_detector": "PySceneDetect AdaptiveDetector", "ours": len(cut_t), "theirs": len(sdc), "agree": len(agree),
+                                 "only_ours": [{"t": round(c, 2), "kind": next((x["kind"] for x in trans if abs(x["t"] - c) <= 0.05), "?")} for c in cut_t if c not in agree], "only_theirs": [x for x in sdc if all(abs(x - c) > 0.15 for c in cut_t)],
+                                 "note": "look at these times on the shot sheets. Ours-only edit points are usually content swaps on a shared background (graphics, seams), dissolves or flashes - the second detector compares whole frames and counts only full shot changes; theirs-only points may be misses"}
     json.dump(dict(fp, shots=shots, transition_list=trans), open(os.path.join(out, "fingerprint.json"), "w"), indent=1, ensure_ascii=False)
     write_style_spec(out, fp, shots)
     json.dump(plan, open(os.path.join(out, "scene_plan.json"), "w", encoding="utf-8"), indent=1, ensure_ascii=False)

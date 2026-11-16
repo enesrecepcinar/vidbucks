@@ -119,6 +119,20 @@ All three are responsive (9:16 keeps text clear of the platform UI; 16:9 re-lays
 - **Countdown** (`Countdown`): N..1 with a rank slam, whip slide (direction alternates), rail, secondary title and note, an
   icon (media library) or a picture, a slow push while each entry holds, and the one flash on #1.
 
+## Bridges, whiteboard, ads and logos
+- **MorphBridge** (`src/kits/media/Bridge.tsx`, demo `MorphDemo`): the old world closes into a window shaped like one of its
+  objects, the object alone on blank paper becomes an object of the next world (outlines resampled by angle, colour through
+  OKLCH), and the new world opens from it. The new world starts at the moment its bridge object is FINISHED (an opening onto a
+  half-drawn object reads as a mistake); both objects >= ~200 px; 0.9-1.4 s; at most three in a short piece.
+- **Whiteboard** (`src/kits/media/Whiteboard.tsx`): items (media icons, point lists, words) drawn at a speed (px/s); the
+  marker tip is placed by the same arc length the stroke reveals, words use the font's measured width, the hand lifts on an
+  arc between strokes, an eraser wipe clears the board. The hand is our own cartoon (white glove, ink outline).
+- **AdSpot** (`src/kits/ad/AdSpot.tsx` + `tools/ad_variants.py`): 15 s hook -> product -> 3 benefits -> proof (only real, with a
+  source or a count) -> CTA; one CSV row per variant, every aspect from the same props, sound bed + hits mixed at -14 LUFS.
+  Every optional prop is written even when empty (Remotion fills missing props from the template's demo defaults).
+- **LogoReveal** (`src/kits/logo/LogoReveal.tsx` + `tools/logo_prep.py`): draw / assemble / mask, then a held shine; the land
+  moment (`LAND[style]`) carries the sound logo's impact; a part as dark as the ground draws its outline in the ink colour.
+
 ## Mixing kits
 ```tsx
 <Series>

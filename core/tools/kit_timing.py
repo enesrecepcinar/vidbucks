@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """kit_timing.py - one timing file for the kits (BoardFilm, LayerScene, Swiss): lines + Whisper word times.
 
-  python tools/kit_timing.py --script script.txt --audio narration.wav --out videos/x/timing.json [--lang tr] [--lead 0.15] [--bpm 112] [--forced]
+  python tools/kit_timing.py --script script.txt --audio narration.wav --out videos/x/timing.json [--lang tr] [--lead 0.15] [--bpm 112]   # forced alignment (stable-ts) by default; --whisper for plain Whisper
   python tools/kit_timing.py --script script.txt --words words.json --audio narration.wav --out ...   # reuse vo_words.py output
 
 script.txt: one narration line per paragraph (blank line between) or one per line. Whisper's words are matched to the
@@ -16,7 +16,15 @@ ap.add_argument("--script", required=True); ap.add_argument("--audio", required=
 ap.add_argument("--words"); ap.add_argument("--lang", default="en"); ap.add_argument("--lead", type=float, default=0.0)
 ap.add_argument("--tail", type=float, default=1.0); ap.add_argument("--bpm", type=float); ap.add_argument("--model", default="small")
 ap.add_argument("--forced", action="store_true", help="forced alignment of the script (tools/align_script.py, stable-ts): exact script words, no guessing")
+ap.add_argument("--whisper", action="store_true", help="use plain Whisper word times even when stable-ts is installed (not recommended: Whisper starts each line's first word ~0.4 s early, absorbing the pause before it; sync_check.py onset catches it)")
 a = ap.parse_args()
+if not a.forced and not a.whisper and not a.words:     # forced alignment is the default when stable-ts is installed
+    try:
+        import importlib.util
+        a.forced = importlib.util.find_spec("stable_whisper") is not None
+        if a.forced: print("timing: forced alignment (stable-ts); pass --whisper for plain Whisper times")
+    except Exception:
+        pass
 if a.forced:
     import sys
     cmd = [sys.executable, str(pathlib.Path(__file__).with_name("align_script.py")), "--script", a.script, "--audio", a.audio, "--out", a.out, "--lang", a.lang, "--lead", str(a.lead), "--tail", str(a.tail), "--model", a.model]

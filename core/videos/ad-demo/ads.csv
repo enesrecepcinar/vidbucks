@@ -1,0 +1,4 @@
+id,hook,hook_type,product,tagline,benefit1,benefit2,benefit3,cta,offer,color,icon,proof_quote,proof_source,proof_rating,proof_count,motion
+claim,Your desk lamp is lying to you.,claim,Halo Desk Light,A fictional lamp for this demo,"Warm in the evening, cool at noon","One touch, no app",Folds flat into a bag,See how it works,Demo offer text,#ffb02e,bulb,,,,,snappy
+question,Why are you tired by 3 pm?,question,Halo Desk Light,A fictional lamp for this demo,Light that follows the clock,"One touch, no app",Folds flat into a bag,See how it works,,#58a6f0,bulb,Best lamp ever,,,,confident
+pov,you finally fixed your desk light,pov,Halo Desk Light,A fictional lamp for this demo,"Warm in the evening, cool at noon","One touch, no app",Folds flat into a bag,See how it works,,#43b37b,bulb,,,,,playful

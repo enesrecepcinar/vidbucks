@@ -11,6 +11,8 @@ Ground truth baked into the test video (18 s, 640x360, 24 fps):
   7-12 s a sideways pan, 14.5-18 s still   -> shot_review.camera_class labels
   4-7 s the words "BURNED TEXT 1453"       -> quality_gate OCR finds them (macOS / tesseract only)
   the picture stops at 18 s, sound at 18 s -> quality_gate streams check stays quiet (no false alarm)
+A second 12 s clip for gradual transitions: a 1 s dissolve centred at 2.5 s, a fade to black 4.5-5.0 s, black, a fade from
+black 6.5-7.0 s, then a light ramp (the same picture brightening, 8.0-9.0 s) and a pan, which must NOT count as transitions.
 
 Exit 1 if any measured answer is outside its tolerance. Run it after changing an analyser and after installing on a
 new machine; the result line goes into the setup report.
@@ -67,6 +69,20 @@ def make(tmp):
     sh("ffmpeg", "-v", "error", "-y", "-i", os.path.join(tmp, "pic.mp4"), "-i", os.path.join(tmp, "a.wav"), "-map", "0:v", "-map", "1:a", "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-t", str(DUR), out)
     return out
 
+def make_gradual(tmp):
+    """12 s: A (testsrc) --dissolve 2.0-3.0--> B (still) --fade to black 4.5-5.0--> black --fade in 6.5-7.0--> C (still) with a
+    light ramp 8.0-9.0 -> pan 10.5-12. Known answers: dissolve at 2.5, fade to black ~4.75, fade from black ~6.75, nothing else."""
+    W, H = 640, 360
+    sh("ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", f"testsrc2=size={W}x{H}:rate=24:duration=3", "-loop", "1", "-t", "4", "-i", os.path.join(tmp, "still.png"),
+       "-loop", "1", "-t", "4.5", "-i", os.path.join(tmp, "text.png"), "-loop", "1", "-t", "1.5", "-i", os.path.join(tmp, "pan.png"),
+       "-filter_complex",
+       f"[0:v]setsar=1,fps=24,format=yuv420p[a];[1:v]scale={W}:{H},setsar=1,fps=24,format=yuv420p,fade=t=out:st=2.5:d=0.5[b];"
+       f"[2:v]scale={W}:{H},setsar=1,fps=24,format=yuv420p,fade=t=in:st=0.5:d=0.5,eq=brightness='if(between(t,2.0,3.0),(t-2.0)*0.25,if(gt(t,3.0),0.25,0))':eval=frame[c];"
+       f"[3:v]crop={W}:{H}:'t*600':0,setsar=1,fps=24,format=yuv420p[d];"
+       f"[a][b]xfade=transition=fade:duration=1:offset=2[ab];[ab][c]concat=n=2:v=1:a=0[abc];[abc][d]concat=n=2:v=1:a=0,format=yuv420p[v]",
+       "-map", "[v]", "-c:v", "libx264", "-crf", "18", os.path.join(tmp, "gradual.mp4"))
+    return os.path.join(tmp, "gradual.mp4")
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter); ap.add_argument("--keep", action="store_true")
     a = ap.parse_args()
@@ -109,6 +125,15 @@ def main():
             row("burned text (OCR)", "BURNED TEXT 1453 at 4-7 s", got, bool(found) and 3.5 <= found[0]["start"] <= 5.0)
         sfail = [c for c in R["checks"] if c["check"] == "streams" and c["severity"] == "FAIL"]
         row("streams false alarm", "none", "none" if not sfail else sfail[0]["msg"], not sfail)
+        gv = make_gradual(tmp); gf, gfps = AR.read_frames(gv, fps=15, w=192, h=108)
+        gc, _, _ = AR.detect_cuts(gf, gfps); G = AR.detect_gradual(gf, gfps, gc)
+        dis = [x for x in G if x["kind"] == "dissolve" and abs(x["t"] - 2.5) <= 0.3]
+        fto = [x for x in G if x["kind"] == "fade to black" and 4.5 <= x["t"] <= 5.0]
+        ffr = [x for x in G if x["kind"] == "fade from black" and 6.5 <= x["t"] <= 7.0]
+        extra = [x for x in G if x not in dis + fto + ffr]
+        row("dissolve found", "2.5 s", ", ".join(f"{x['t']}" for x in dis) or "none", bool(dis))
+        row("fades found", "~4.75 out, ~6.75 in", ", ".join(f"{x['kind']} {x['t']}" for x in fto + ffr) or "none", bool(fto) and bool(ffr))
+        row("no false gradual", "light ramp + pan ignored", ", ".join(f"{x['kind']} {x['t']}" for x in extra) or "none", not extra)
     finally:
         if not a.keep: shutil.rmtree(tmp, ignore_errors=True)
     ok = sum(1 for r in rows if r[3])
