@@ -1,5 +1,20 @@
 # Changelog
 
+## 2.2.0 - Footage, drawn films, format kits and a stricter clock
+- Footage route: `tools/footage.py` (transcribe, pack, tighten, render, verify by re-hearing each cut, finish, highlights, B-roll,
+  formats), active-speaker reframe, `FootageEdit` layer, skill `vidbucks-footage-edit`.
+- Media kit: seven drawing media (crosshatch ink, sketchbook, cut paper, riso print, pixel, isometric, math stage); `MediaScene`
+  draws a film from its sentences (40 icons, counted numbers, comparisons, lists, titles) with sound from `media_cues.py`;
+  iris, beam and shape-morph bridges; whiteboard with a drawn hand.
+- Format kits: `ChatStory` (+ `chat_story.py`), `DataRace`, `Countdown`, `AdSpot` (+ `ad_variants.py`), `LogoReveal`
+  (+ `logo_prep.py`); countdown and whiteboard are style-director renderers inside multi-style films.
+- `motion.ts`: one motion language (five personalities, role curves, distance-scaled durations, capped stagger, secondary lag,
+  OKLCH colour, speed ramp); motion rules 13-31.
+- Analysis: dissolve and fade detection, a second cut detector as a cross-check, self-test 12/12; `sync_check.py`; word timing
+  by forced alignment of the script by default.
+- Gates and planning: `text_check.py`, `gates.py` (story -> look -> board), `review_sheets.py`, `beatmap.py`, card library
+  (`cards.py`), style registry with 115 entries.
+
 ## 2.1.0 - Discipline layer and AI-video route
 - `quality_gate.py`: measured delivery gate (picture vs sound, hook motion, still share, static and repeated framings, pops, black/frozen, silences, burned-in text via Apple Vision OCR, loudness, resolution, script adherence with Whisper, brief targets, reference rhythm); FAIL blocks delivery.
 - `words_check.py`: script and prompt check (clichés and machine-written tells in TR/EN, dashes, long scenes; real-person/IP names and text-inviting prompts for video models).

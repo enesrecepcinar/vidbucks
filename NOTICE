@@ -11,6 +11,8 @@ THIRD-PARTY SOFTWARE (not part of this repository; installed by the user or by t
 - HyperFrames (heygen-com/hyperframes, Apache-2.0): an optional alternative renderer, fetched with npx on first use, not bundled. It collects anonymous usage telemetry unless disabled; see docs/integrations.md.
 - FFmpeg (ffmpeg.org): LGPL/GPL depending on the build you install.
 - Python libraries: numpy, scipy, Pillow, soundfile (BSD-style); faster-whisper and OpenAI Whisper models (MIT); yt-dlp (Unlicense).
+- Optional analysis and alignment libraries: stable-ts (MIT) for forced alignment, PySceneDetect (BSD-3-Clause) as a second cut
+  detector, OpenCV (Apache-2.0) with the YuNet face model (MIT) for speaker framing, spaCy and its English model (MIT).
 - Voice engines (open source, installed on demand): Kokoro (Apache-2.0), Piper (MIT; each VOICE has its own licence - some are
   non-commercial), Chatterbox (MIT), OmniVoice (see its repository). Model weights are downloaded by the user from their sources.
 - Fonts are loaded from Google Fonts via @remotion/google-fonts (SIL Open Font License and similar).
