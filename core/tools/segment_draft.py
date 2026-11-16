@@ -82,7 +82,7 @@ ICON_LEX = [("train", "train carriage railway rail metro subway wagon tren vagon
     ("crown", "king queen power rule empire throne kral kraliçe güç imparator taht"), ("eye", "see watch look eye notice saw görmek izle bak göz fark"),
     ("cloud", "cloud weather storm sky bulut hava fırtına gökyüzü"), ("moon", "night moon sleep dark gece ay uyku karanlık"),
     ("house", "house home building village street ev bina köy sokak mahalle"), ("coin", "money coin cash dollar price cost pay rich gold para lira dolar fiyat altın zengin ödeme maliyet"),
-    ("clock", "time clock hour minute second count late year day zaman saat dakika saniye say geç gün süre"), ("tree", "tree forest nature wood plant ağaç orman doğa bitki"),
+    ("clock", "time clock hour minute second count late year day zaman saat dakika saniye say geç gün süre"), ("tree", "tree forest nature wood plant seed root leaf leaves shoot grow ağaç orman doğa bitki tohum kök yaprak filiz büyü"),
     ("heart", "love heart care feel kalp sevgi aşk duygu"), ("globe", "world earth country global planet dünya ülke küresel gezegen"),
     ("person", "people person man woman child insan kişi adam kadın çocuk halk"), ("book", "book history story read school law kitap tarih hikaye okul yasa"),
     ("chart", "grow rise data percent increase fall drop artış büyü veri oran yüzde düş"), ("bulb", "idea think discover invent mind fikir düşün keşif icat akıl"),
@@ -234,6 +234,52 @@ for sg in P["segments"]:
         seg["data"] = {"width": a.width, "height": a.height, "fps": a.fps, "look": pr.get("look", "wall"), "grade": pr.get("grade", "natural"), "fadeIn": 0.001, "fadeOut": 0.01, "items": items, "camera": cam}
     elif sg["renderer"] == "layers":
         seg["data"] = None; seg["todo"] = "author LayerScene shots for these lines (docs/kits.md); run tools/layer_check.py"
+    elif sg["renderer"] == "whiteboard":
+        # one sentence = one icon + a short word or phrase; two per board, then the eraser; times are segment-local
+        W_, H_ = a.width, a.height; land = W_ >= H_; u = min(W_, H_)
+        slots = [(0.3, 0.42), (0.7, 0.42)] if land else [(0.5, 0.24), (0.5, 0.52)]
+        items, wipes, k, prev_icon = [], [], 0, None
+        for lid in sg["lines"]:
+            l = lines[lid]
+            for w0, text in sentences(l):
+                at = round((l["words"][w0][1] if l.get("words") and w0 < len(l["words"]) else l["start"]) - sg["start"] - 0.1, 3)
+                board, slot = divmod(k, 2)
+                if slot == 0 and board > 0: wipes.append(round(max(0.0, at - 1.05), 3))
+                sx, sy = slots[slot]; cx, cy = W_ * sx, H_ * sy
+                icon, word = media_icon(text, k, prev_icon)
+                ws = text.strip(" .!?").split()
+                label = word or (" ".join(ws) if len(ws) <= 3 else " ".join([x for x in ws if fold(x.strip(",;:")) not in STOP][:2]).strip(",;:. "))
+                items.append({"kind": "icon", "icon": icon, "x": round(cx), "y": round(cy), "s": round(u * 0.13), "at": max(0.0, at), "board": board, **({"color": "#2f6fde"} if k % 2 else {})})
+                size = round(u * 0.075)
+                items.append({"kind": "text", "text": label, "x": round(cx - len(label) * size * 0.27), "y": round(cy + u * 0.25), "size": size, "board": board, "color": "#d63b2f" if k % 3 == 2 else "#1d1e22"})
+                prev_icon = icon; k += 1
+        seg["data"] = {"items": items, "wipes": wipes, "speed": 1700, "duration": round(sg["end"] - sg["start"], 3)}
+    elif sg["renderer"] == "countdown":
+        # the first line titles the list; every other line is an entry that lands on its own narration time
+        ls = [lines[lid] for lid in sg["lines"]]
+        def phrase(t, n=5):
+            ws = t.strip(" .!?").split(); first = t.split(".")[0].strip(" .!?").split()
+            return " ".join(first) if len(first) <= n else " ".join([x for x in ws if fold(x.strip(",;:")) not in STOP][:3]).strip(",;:. ")
+        title = ls[0]["text"].strip() if len(ls[0]["text"].split()) <= 9 else phrase(ls[0]["text"], 6)
+        entries, prev_icon = [], None
+        for k, l in enumerate(ls[1:]):
+            icon, word = media_icon(l["text"], k, prev_icon); prev_icon = icon
+            # the rank is on screen already: drop a spoken "Number three:" / "3." / "Üç numara:" lead-in from the title
+            body = re.sub(r"^\s*(number\s+\w+|no\.?\s*\d+|#?\d+[.):]|\w+\s+numara)\s*[:.,-]?\s*", "", l["text"].strip(), flags=re.I)
+            parts = [x.strip() for x in re.split(r"(?<=[.:!?])\s+", body) if x.strip()]
+            head = parts[0].rstrip(".:!?") if parts else body
+            if len(head.split()) > 6 and "," in head:                 # "water, a little and often ..." -> title "water", note the rest
+                etitle, rest = head.split(",", 1)[0].strip(), (head.split(",", 1)[1].strip() + " " + " ".join(parts[1:])).strip()
+                rest = rest[:1].upper() + rest[1:]
+            elif len(head.split()) <= 6:
+                etitle, rest = head, " ".join(parts[1:])
+            else:
+                etitle, rest = phrase(body), body
+            note = rest if len(rest.split()) <= 18 else rest.split(".")[0].strip() + "."
+            entries.append({"title": etitle[:1].upper() + etitle[1:], "note": note, "icon": icon, "at": round(l["start"] - sg["start"], 3)})
+        gaps = [entries[i + 1]["at"] - entries[i]["at"] for i in range(len(entries) - 1)] or [3.0]
+        seg["data"] = {"title": title, "items": entries, "intro": entries[0]["at"] if entries else 1.6, "itemDur": round(sum(gaps) / len(gaps), 2), "outro": 1.0} if entries else None
+        if not entries: seg["todo"] = "a countdown needs a title line and at least one entry line"
     elif sg["renderer"] == "media":
         beats = []
         for k, lid in enumerate(sg["lines"]):

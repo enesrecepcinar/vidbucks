@@ -119,6 +119,17 @@ All three are responsive (9:16 keeps text clear of the platform UI; 16:9 re-lays
 - **Countdown** (`Countdown`): N..1 with a rank slam, whip slide (direction alternates), rail, secondary title and note, an
   icon (media library) or a picture, a slow push while each entry holds, and the one flash on #1.
 
+## Kits inside a film (style director -> segment_draft -> MultiStyle)
+The registry binds styles to kits: `whiteboard` and `countdown` are native renderers now (MultiStyle draws them), the
+director can pick them per segment (it chose the whiteboard for a process explanation on its own), and `segment_draft.py`
+builds their data from the narration:
+- whiteboard: one sentence = an icon (the media icon picker) + a short word or phrase, two per board, an eraser between
+  boards (`wipes`), every item at its sentence's own time (segment-local).
+- countdown: the first line titles the list; every other line is an entry at its own line time; a spoken "Number three:"
+  lead-in is dropped (the rank is on screen), a long entry is split at its first comma into title + note.
+Format kits that are whole videos rather than film segments (chat-story, data-race, ad-spot, logo-reveal) are in the
+registry as `config` templates, like the older ones.
+
 ## Bridges, whiteboard, ads and logos
 - **MorphBridge** (`src/kits/media/Bridge.tsx`, demo `MorphDemo`): the old world closes into a window shaped like one of its
   objects, the object alone on blank paper becomes an object of the next world (outlines resampled by angle, colour through
@@ -126,7 +137,7 @@ All three are responsive (9:16 keeps text clear of the platform UI; 16:9 re-lays
   half-drawn object reads as a mistake); both objects >= ~200 px; 0.9-1.4 s; at most three in a short piece.
 - **Whiteboard** (`src/kits/media/Whiteboard.tsx`): items (media icons, point lists, words) drawn at a speed (px/s); the
   marker tip is placed by the same arc length the stroke reveals, words use the font's measured width, the hand lifts on an
-  arc between strokes, an eraser wipe clears the board. The hand is our own cartoon (white glove, ink outline).
+  arc between strokes, an eraser wipe clears the board; `wipes: [t...]` + `board` per item give several boards in one segment. The hand is our own cartoon (white glove, ink outline).
 - **AdSpot** (`src/kits/ad/AdSpot.tsx` + `tools/ad_variants.py`): 15 s hook -> product -> 3 benefits -> proof (only real, with a
   source or a count) -> CTA; one CSV row per variant, every aspect from the same props, sound bed + hits mixed at -14 LUFS.
   Every optional prop is written even when empty (Remotion fills missing props from the template's demo defaults).

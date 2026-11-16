@@ -289,3 +289,9 @@ No downloading other channels' videos, no Google Images scraping, only CC0/CC BY
   bridge object is finished; place the hand by arc length and measure words in their font (an estimate put the hand far
   ahead); write every optional prop explicitly (missing props silently fell back to the demo's offer text); a dark logo
   part on a dark ground needs the ink colour for its draw-on line; make the assembly's last part land on the sound-logo beat.
+
+- 2026-11-16 · Registry -> kits: `countdown` and `whiteboard` are native MultiStyle renderers; the director picked the
+  whiteboard for a process passage unprompted; chat-story, data-race, ad-spot and logo-reveal are config templates (115
+  styles). Lessons: the countdown's list title was overwritten by the last entry's title (one variable name for both) -
+  check the drafted edit.json, not only the render; a title card that holds 2.4 s on a dark ground read as "black / frozen"
+  to the gate, so it now has a drifting light and a push; a spoken "Number three:" duplicates the rank on screen.

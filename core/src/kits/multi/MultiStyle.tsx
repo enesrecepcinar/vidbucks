@@ -1,5 +1,5 @@
 // MultiStyle: one film, any number of styles (one or many - the style director decides from the content).
-// edit.json = segments over ONE narration timeline; each segment names a renderer (board | layers | type | swiss-dance | shots | media)
+// edit.json = segments over ONE narration timeline; each segment names a renderer (board | layers | type | swiss-dance | shots | media | whiteboard | countdown)
 // and its data. Segments get their lines re-based to local time, so every kit runs unchanged inside its <Sequence>.
 // Transitions between styles: cut · fade · wipe · knife · flash · iris (chosen per pair by the director).
 import React from "react";
@@ -10,11 +10,13 @@ import { TypeCards, TypeCardsCfg } from "../type/TypeCards";
 import { SwissDance } from "../swiss/Swiss";
 import { ShotFilm, Visuals } from "../shots/ShotFilm";
 import { MediaScene, MediaCfg } from "../media/MediaScene";
+import { Whiteboard, WbCfg } from "../media/Whiteboard";
+import { Countdown, CountCfg } from "../list/Countdown";
 import { KitTiming, PRESS, clamp } from "../time";
 
 export type Transition = { kind: "cut" | "fade" | "wipe" | "knife" | "flash" | "iris"; dur?: number };
 export type Segment = {
-  id: string; start: number; end: number; lines: number[]; style: string; renderer: "board" | "layers" | "type" | "swiss-dance" | "shots" | "media";
+  id: string; start: number; end: number; lines: number[]; style: string; renderer: "board" | "layers" | "type" | "swiss-dance" | "shots" | "media" | "whiteboard" | "countdown";
   data: unknown; transition?: Transition; reason?: string;
 };
 export type Edit = { width: number; height: number; fps: number; duration: number; audio?: { src: string; gain?: number }; segments: Segment[]; maps?: Record<string, MapData> };
@@ -52,6 +54,8 @@ export const MultiStyle: React.FC<{ edit: Edit; timing: KitTiming }> = ({ edit, 
         else if (seg.renderer === "swiss-dance") body = <SwissDance timing={lt} />;
         else if (seg.renderer === "shots") body = <ShotFilm visuals={{ ...(seg.data as Visuals), maps: { ...(edit.maps ?? {}), ...((seg.data as Visuals).maps ?? {}) } }} timing={lt} durationSec={sec} />;
         else if (seg.renderer === "media") body = <MediaScene cfg={seg.data as MediaCfg} timing={lt} />;
+        else if (seg.renderer === "whiteboard") body = <Whiteboard cfg={seg.data as WbCfg} />;
+        else if (seg.renderer === "countdown") body = <Countdown cfg={seg.data as CountCfg} />;
         return <Sequence key={seg.id} from={from} durationInFrames={dur} name={`${seg.id} · ${seg.style}`}><Enter tr={i ? seg.transition : undefined}>{body}</Enter></Sequence>;
       })}
       {edit.audio && <Audio src={staticFile(edit.audio.src)} volume={edit.audio.gain ?? 1} />}

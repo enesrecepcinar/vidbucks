@@ -11,11 +11,13 @@ import { EASE, clamp } from "../motion";
 
 const MARKER = fMarker("normal", { weights: ["400"], subsets: ["latin"] }).fontFamily;
 export type WbItem =
-  | { kind: "icon"; icon: IconId; x: number; y: number; s: number; color?: string; at?: number }
-  | { kind: "line"; P: Pt[]; color?: string; w?: number; at?: number }
-  | { kind: "text"; text: string; x: number; y: number; size: number; color?: string; at?: number };
-export type WbCfg = { items: WbItem[]; speed?: number; wipeAt?: number; duration?: number };
-type Seg = { kind: "stroke"; P: Pt[]; L: number[]; len: number; color: string; w: number; at: number; dur: number } | { kind: "text"; text: string; x: number; y: number; size: number; color: string; at: number; dur: number; width: number };
+  | { kind: "icon"; icon: IconId; x: number; y: number; s: number; color?: string; at?: number; board?: number }
+  | { kind: "line"; P: Pt[]; color?: string; w?: number; at?: number; board?: number }
+  | { kind: "text"; text: string; x: number; y: number; size: number; color?: string; at?: number; board?: number };
+export type WbCfg = { items: WbItem[]; speed?: number; wipeAt?: number; wipes?: number[]; duration?: number };   // wipes[i]: when board i is erased (board i+1 follows)
+const WIPE = 0.9;
+export const wipesOf = (cfg: WbCfg) => cfg.wipes ?? (cfg.wipeAt != null ? [cfg.wipeAt] : []);
+type Seg = ({ kind: "stroke"; P: Pt[]; L: number[]; len: number; color: string; w: number; at: number; dur: number } | { kind: "text"; text: string; x: number; y: number; size: number; color: string; at: number; dur: number; width: number }) & { board: number };
 
 let mctx: CanvasRenderingContext2D | null = null;
 /** the real width of a word in the marker font (an estimate put the hand far ahead of the ink) */
@@ -31,24 +33,26 @@ function pointAt(P: Pt[], L: number[], d: number): Pt {
 }
 /** the board's timeline: every stroke and word gets a start and a duration from its length (speed px/s) */
 export function planBoard(cfg: WbCfg): Seg[] {
-  const v = cfg.speed ?? 1500, segs: Seg[] = []; let t = 0.6;
+  const v = cfg.speed ?? 1500, segs: Seg[] = [], wipes = wipesOf(cfg); let t = 0.6;
   for (const it of cfg.items) {
+    const bd = it.board ?? 0;
+    if (bd > 0 && wipes[bd - 1] != null) t = Math.max(t, wipes[bd - 1] + WIPE + 0.05);   // a new board starts after the eraser
     if (it.at != null) t = Math.max(t, it.at);
     if (it.kind === "text") {
       const width = textWidth(it.text, it.size), dur = clamp(it.text.length * 0.09, 0.4, 2.5);
-      segs.push({ kind: "text", text: it.text, x: it.x, y: it.y, size: it.size, color: it.color ?? "#1d1e22", at: t, dur, width }); t += dur + 0.25; continue;
+      segs.push({ kind: "text", text: it.text, x: it.x, y: it.y, size: it.size, color: it.color ?? "#1d1e22", at: t, dur, width, board: bd }); t += dur + 0.25; continue;
     }
     const strokes: Pt[][] = it.kind === "line" ? [it.P] : (ICONS[it.icon] as { P: Pt[]; closed: boolean }[]).map((p) => {
       const Q = p.P.map(([x, y]) => [it.x + x * it.s, it.y + y * it.s] as Pt); return p.closed ? [...Q, Q[0]] : Q; });
     for (const S of strokes) {
       const P = wob(densify(S, false, 10), 3, 1.2, 0), L = lenOf(P), len = L[L.length - 1], dur = clamp(len / v, 0.18, 2.2);
-      segs.push({ kind: "stroke", P, L, len, color: it.color ?? "#1d1e22", w: it.kind === "line" ? it.w ?? 9 : 9, at: t, dur }); t += dur + 0.12;
+      segs.push({ kind: "stroke", P, L, len, color: it.color ?? "#1d1e22", w: it.kind === "line" ? it.w ?? 9 : 9, at: t, dur, board: bd }); t += dur + 0.12;
     }
     t += 0.2;
   }
   return segs;
 }
-export const boardLength = (cfg: WbCfg) => cfg.duration ?? (() => { const s = planBoard(cfg), e = s[s.length - 1]; return e.at + e.dur + 2.2 + (cfg.wipeAt ? 1.2 : 0); })();
+export const boardLength = (cfg: WbCfg) => cfg.duration ?? (() => { const s = planBoard(cfg), e = s[s.length - 1]; const w = wipesOf(cfg); return Math.max(e.at + e.dur + 2.2, w.length ? w[w.length - 1] + WIPE + 0.3 : 0); })();
 
 /** the drawn hand holding a marker; the tip of the marker is the origin */
 const Hand: React.FC<{ x: number; y: number; rot: number; lift: number }> = ({ x, y, rot, lift }) => (
@@ -81,8 +85,9 @@ export const Whiteboard: React.FC<{ cfg: WbCfg }> = ({ cfg }) => {
     const a = prev ? prev.at + prev.dur : 0, b = next ? next.at : a + 0.7, k = EASE.inOut(clamp((t - a) / Math.max(0.05, b - a)));
     tip = [from[0] + (to[0] - from[0]) * k, from[1] + (to[1] - from[1]) * k]; lift = Math.sin(Math.PI * k) * Math.min(60, Math.hypot(to[0] - from[0], to[1] - from[1]) * 0.25);
   }
-  const wipe = cfg.wipeAt != null ? clamp((t - cfg.wipeAt) / 0.9) : 0, wipeX = -W * 0.2 + W * 1.5 * EASE.inOut(wipe);
-  const handHidden = wipe > 0;
+  const wipes = wipesOf(cfg), cb = wipes.filter((w) => t >= w + WIPE).length, wi = wipes.findIndex((w) => t >= w && t < w + WIPE);   // current board; the board being erased
+  const wipe = wi >= 0 ? clamp((t - wipes[wi]) / WIPE) : 0, wipeX = -W * 0.2 + W * 1.5 * EASE.inOut(wipe);
+  const handHidden = wi >= 0;
   return (
     <AbsoluteFill style={{ background: "radial-gradient(ellipse at 50% 40%, #ffffff, #eef0f2)" }}>
       <svg viewBox={`0 0 ${W} ${H}`} width="100%" height="100%" style={{ position: "absolute", inset: 0 }}>
@@ -90,9 +95,9 @@ export const Whiteboard: React.FC<{ cfg: WbCfg }> = ({ cfg }) => {
           <clipPath id="wb-wipe"><rect x={wipeX} y={0} width={W * 2} height={H} /></clipPath>
           {segs.map((s, i) => s.kind === "text" ? <clipPath key={i} id={`wb-t${i}`}><rect x={s.x - 10} y={s.y - s.size * 1.2} width={10 + s.width * clamp((t - s.at) / s.dur) * 1.05} height={s.size * 1.6} /></clipPath> : null)}
         </defs>
-        <g clipPath={wipe > 0 ? "url(#wb-wipe)" : undefined}>
+        <g clipPath={wi >= 0 ? "url(#wb-wipe)" : undefined}>
           {segs.map((s, i) => {
-            if (t < s.at) return null;
+            if (t < s.at || s.board !== (wi >= 0 ? wi : cb)) return null;
             const k = clamp((t - s.at) / s.dur);
             if (s.kind === "text") return <text key={i} x={s.x} y={s.y} clipPath={`url(#wb-t${i})`} fontFamily={MARKER} fontSize={s.size} fill={s.color}>{s.text}</text>;
             const n = Math.max(2, Math.ceil(s.P.length * k)), P = s.P.slice(0, n);
@@ -100,7 +105,7 @@ export const Whiteboard: React.FC<{ cfg: WbCfg }> = ({ cfg }) => {
             return <path key={i} d={path(P)} fill="none" stroke={s.color} strokeWidth={s.w} strokeLinecap="round" strokeLinejoin="round" />;
           })}
         </g>
-        {wipe > 0 && wipe < 1 && <g transform={`translate(${wipeX} ${H * 0.5})`}><rect x={-60} y={-H * 0.55} width={120} height={H * 1.1} rx={30} fill="#3a3f47" /><rect x={-60} y={-H * 0.55} width={120} height={40} fill="#5b6470" /></g>}
+        {wi >= 0 && <g transform={`translate(${wipeX} ${H * 0.5})`}><rect x={-60} y={-H * 0.55} width={120} height={H * 1.1} rx={30} fill="#3a3f47" /><rect x={-60} y={-H * 0.55} width={120} height={40} fill="#5b6470" /></g>}
         {!handHidden && <Hand x={tip[0]} y={tip[1]} rot={-28} lift={lift} />}
       </svg>
     </AbsoluteFill>

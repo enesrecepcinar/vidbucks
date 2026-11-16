@@ -425,8 +425,10 @@
    "place": 0.21,
    "person": 0.21,
    "quote": 0.175,
-   "number": 1,
-   "warning": 0.8
+   "list": 1.0,
+   "number": 0.9,
+   "title": 0.6,
+   "warning": 0.5
   },
   "uses": [
    "Launches",
@@ -436,9 +438,9 @@
   "source": "lemo-opuscar (CC BY-NC 4.0 docs)",
   "style_doc": "third_party/lemo-opuscar/styles/countdown/STYLE.md",
   "needs": [],
-  "renderer": null,
+  "renderer": "countdown",
   "preset": null,
-  "readiness": "build"
+  "readiness": "native"
  },
  {
   "id": "crayon-book",
@@ -2481,9 +2483,9 @@
   "source": "lemo-opuscar (CC BY-NC 4.0 docs)",
   "style_doc": "third_party/lemo-opuscar/styles/whiteboard/STYLE.md",
   "needs": [],
-  "renderer": "type",
-  "preset": "whiteboard",
-  "readiness": "skin"
+  "renderer": "whiteboard",
+  "preset": null,
+  "readiness": "native"
  },
  {
   "id": "woodcut",
@@ -2605,6 +2607,74 @@
    "place": 1,
    "map": 1,
    "history": 0.8
+  },
+  "uses": [],
+  "source": "vidbucks",
+  "renderer": null,
+  "preset": null,
+  "readiness": "config"
+ },
+ {
+  "id": "chat-story",
+  "name": "Chat Story (ChatStory kit + tools/chat_story.py)",
+  "category": "Vidbucks templates",
+  "family": "vidbucks",
+  "dark": true,
+  "suits": {
+   "story": 0.9,
+   "humor": 0.8,
+   "person": 0.6
+  },
+  "uses": [],
+  "source": "vidbucks",
+  "renderer": null,
+  "preset": null,
+  "readiness": "config"
+ },
+ {
+  "id": "data-race",
+  "name": "Bar Chart Race (DataRace kit)",
+  "category": "Vidbucks templates",
+  "family": "vidbucks",
+  "dark": true,
+  "suits": {
+   "data": 1,
+   "number": 0.9,
+   "year": 0.8,
+   "comparison": 0.8
+  },
+  "uses": [],
+  "source": "vidbucks",
+  "renderer": null,
+  "preset": null,
+  "readiness": "config"
+ },
+ {
+  "id": "ad-spot",
+  "name": "Ad Variants (AdSpot kit + tools/ad_variants.py)",
+  "category": "Vidbucks templates",
+  "family": "vidbucks",
+  "dark": true,
+  "suits": {
+   "product": 1,
+   "title": 0.6
+  },
+  "uses": [],
+  "source": "vidbucks",
+  "renderer": null,
+  "preset": null,
+  "readiness": "config"
+ },
+ {
+  "id": "logo-reveal",
+  "name": "Logo Reveal (LogoReveal kit + tools/logo_prep.py)",
+  "category": "Vidbucks templates",
+  "family": "vidbucks",
+  "dark": true,
+  "suits": {
+   "title": 0.8,
+   "closing": 0.7,
+   "product": 0.6
   },
   "uses": [],
   "source": "vidbucks",

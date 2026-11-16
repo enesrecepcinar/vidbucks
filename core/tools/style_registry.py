@@ -4,7 +4,7 @@
   python tools/style_registry.py            # rebuild from third_party/lemo-opuscar/styles + Vidbucks kits/templates
 
 Each entry: id, name, family (look family, for transitions/contrast), category, suits {tag: weight}, tone, dark (bool),
-renderer (board | type | layers | swiss-dance | media | null), preset (look/preset for the renderer), readiness:
+renderer (board | type | layers | swiss-dance | media | whiteboard | countdown | null), preset (look/preset for the renderer), readiness:
   native = drawn by its own kit/preset · skin = drawn by a related kit in this style's palette/type/texture (approximation,
   flagged in the edit) · author = needs agent-authored art (LayerScene) · build = no kit yet (the style-library skill builds one)
 Content tags (what style_director.py detects in the script): number year money percent place map process list comparison
@@ -36,7 +36,7 @@ EXTRA = {
     "visual-investigation": {"mystery": 1, "place": .8, "document": .8}, "dark-documentary": {"mystery": 1, "warning": .8, "place": .6},
     "map-explainer": {"place": 1, "map": 1}, "satellite-briefing": {"place": 1, "map": 1, "nature": .6}, "transit-map": {"place": .7, "process": .7, "list": .6},
     "caption-news": {"warning": 1, "number": .6, "place": .4}, "news-package": {"warning": .8, "person": .6, "place": .5}, "newsreel": {"history": 1, "year": .9},
-    "silent-film": {"history": 1, "humor": .7, "quote": .6, "story": .6}, "countdown": {"number": 1, "warning": .8},
+    "silent-film": {"history": 1, "humor": .7, "quote": .6, "story": .6}, "countdown": {"list": 1.0, "number": .9, "title": .6, "warning": .5},
     "swiss-motion": {"number": .9, "process": .6, "list": .7}, "pop-art": {"product": .8, "humor": .6, "money": .6}, "spy-titles": {"mystery": 1, "title": 1},
     "art-deco": {"title": 1, "money": .6, "history": .5}, "bauhaus-shapes": {"process": .5, "title": .6}, "kino-montage": {"history": .8, "person": .6, "title": .6},
     "halftone-dossier": {"document": 1, "mystery": .8, "person": .6}, "woodcut": {"history": .8, "story": .6}, "engraving": {"history": .9, "quote": .7, "science": .5},
@@ -66,6 +66,8 @@ LAYERS = {"stick-explainer": "grid", "one-line": "grid", "sketchnote": "paper", 
           "silhouette-rhythm": "tv", "midcentury-toon": "paper", "rubber-hose": "grid"}
 # drawing media (src/kits/media/Media.tsx): primitives the agent composes a scene from (ink boil, hatching, torn paper,
 # riso plates, pixel canvas, isometric hairline, math stage) -> these registry styles are drawn in the nearest medium
+# styles that now have a dedicated kit of their own (MultiStyle renders them directly; checked before every other map)
+KITS = {"countdown": ("countdown", "native"), "whiteboard": ("whiteboard", "native")}
 MEDIA = {"colored-pencil": "crosshatch", "urban-sketch": "crosshatch", "printed-long-take": "crosshatch", "crayon-book": "cut-paper", "paper-popup": "cut-paper",
          "crayon-world": "cut-paper", "pixel-rpg": "pixel", "microgame": "pixel", "isometric-picture-book": "isometric", "precise-mechanism": "isometric",
          "white-model": "isometric"}
@@ -87,7 +89,8 @@ for d in sorted(LEMO.iterdir()):
     e = {"id": slug, "name": s.get("en", slug), "category": cat, "family": FAMILY(cat), "dark": slug in DARK, "suits": suits,
          "uses": s.get("uses", []), "source": "lemo-opuscar (CC BY-NC 4.0 docs)", "style_doc": f"third_party/lemo-opuscar/styles/{slug}/STYLE.md",
          "needs": s.get("needs", [])}
-    if slug in BOARD: lk, gr, rd = BOARD[slug]; e.update(renderer="board", preset={"look": lk, "grade": gr}, readiness=rd)
+    if slug in KITS: e.update(renderer=KITS[slug][0], preset=None, readiness=KITS[slug][1])
+    elif slug in BOARD: lk, gr, rd = BOARD[slug]; e.update(renderer="board", preset={"look": lk, "grade": gr}, readiness=rd)
     elif slug in TYPE_PRESETS: e.update(renderer="type", preset=slug, readiness="native" if slug in NATIVE_TYPE else "skin")
     elif slug in LAYERS: e.update(renderer="layers", preset={"look": LAYERS[slug]}, readiness="author")
     elif slug in MEDIA: e.update(renderer="media", preset={"medium": MEDIA[slug]}, readiness="skin")
@@ -99,7 +102,11 @@ for tid, name, suits, dark in [("kinetic-type", "Kinetic Typography (Tpl-Kinetic
                                ("icon-story", "Icon Story (Tpl-IconStory)", {"process": .8, "list": .7, "product": .6}, True),
                                ("particle-bloom", "Particle Bloom (Tpl-ParticleBloom)", {"tech": .8, "science": .7, "emotion": .5}, True),
                                ("stickman-longform", "Stickman long-form engine", {"story": .8, "process": .7, "humor": .7}, False),
-                               ("geomap-europe", "GeoMap documentary (Europe)", {"place": 1, "map": 1, "history": .8}, False)]:
+                               ("geomap-europe", "GeoMap documentary (Europe)", {"place": 1, "map": 1, "history": .8}, False),
+                               ("chat-story", "Chat Story (ChatStory kit + tools/chat_story.py)", {"story": .9, "humor": .8, "person": .6}, True),
+                               ("data-race", "Bar Chart Race (DataRace kit)", {"data": 1, "number": .9, "year": .8, "comparison": .8}, True),
+                               ("ad-spot", "Ad Variants (AdSpot kit + tools/ad_variants.py)", {"product": 1, "title": .6}, True),
+                               ("logo-reveal", "Logo Reveal (LogoReveal kit + tools/logo_prep.py)", {"title": .8, "closing": .7, "product": .6}, True)]:
     out.append({"id": tid, "name": name, "category": "Vidbucks templates", "family": "vidbucks", "dark": dark, "suits": suits, "uses": [],
                 "source": "vidbucks", "renderer": None, "preset": None, "readiness": "config"})
 MEDIUM_OF = {"crosshatch-ink": "crosshatch", "sketchbook": "sketchbook", "cut-paper": "cut-paper", "riso-print": "riso", "pixel-lowres": "pixel", "iso-hairline": "isometric", "math-stage": "math"}

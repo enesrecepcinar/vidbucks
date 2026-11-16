@@ -70,8 +70,8 @@ export const Countdown: React.FC<{ cfg: CountCfg }> = ({ cfg }) => {
       )}
       {flash > 0 && <AbsoluteFill style={{ background: "#fff", opacity: flash * 0.35 }} />}
       {introK > 0 && (
-        <AbsoluteFill style={{ background: T.bg1, opacity: introK, alignItems: "center", justifyContent: "center", padding: 90 * u }}>
-          <div style={{ fontFamily: DISPLAY, fontSize: (vertical ? 96 : 92) * u, lineHeight: 1.08, color: T.ink, textAlign: "center", transform: `scale(${0.94 + 0.06 * EASE.out(clamp(t / 0.5))})` }}>{cfg.title}</div>
+        <AbsoluteFill style={{ background: `radial-gradient(ellipse at ${40 + 10 * Math.sin(t * 0.8)}% 40%, ${mixOklch(T.bg2, A, 0.22)}, ${T.bg1})`, opacity: introK, alignItems: "center", justifyContent: "center", padding: 90 * u }}>   {/* the title card is alive: a coloured light drifts, the title pushes in */}
+          <div style={{ fontFamily: DISPLAY, fontSize: (vertical ? 96 : 92) * u, lineHeight: 1.08, color: T.ink, textAlign: "center", transform: `scale(${(0.94 + 0.06 * EASE.out(clamp(t / 0.5))) * (1 + 0.06 * EASE.inOut(clamp(t / Math.max(1, cfg.intro ?? 1.6))))})` }}>{cfg.title}</div>
         </AbsoluteFill>
       )}
       {cfg.source && <div style={{ position: "absolute", left: W * 0.08, bottom: vertical ? H * 0.21 : H * 0.04, fontSize: 22 * u, color: T.dim }}>{cfg.source}</div>}
