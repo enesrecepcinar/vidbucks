@@ -29,6 +29,9 @@ import { FootageEdit, type FootageProps } from "../kits/footage/FootageEdit";
 import { CardGallery } from "../kits/cards/Cards";
 import { MediaReel, MediaGallery, reelLength } from "../kits/media/Media";
 import { MediaSceneDemo, IconSheet } from "../kits/media/MediaScene";
+import { ChatStory, DEMO_CHAT } from "../kits/chat/ChatStory";
+import { DataRace, DEMO_RACE, raceLength } from "../kits/data/DataRace";
+import { Countdown, DEMO_COUNT, countLength } from "../kits/list/Countdown";
 import { GymEdit, GYM_DURATION } from "../kits/gym/GymEdit";
 import { GymTech, TECH_DURATION } from "../kits/gym/GymTech";
 import { BunkerDemo, BUNKER_DURATION } from "../kits/bunker/BunkerDemo";
@@ -50,6 +53,9 @@ export const TemplateCompositions: React.FC = () => (
     <Composition id="MediaScene-demo" component={MediaSceneDemo as React.FC<any>} width={1920} height={1080} fps={30} durationInFrames={330} defaultProps={{ medium: "crosshatch" }} />
     <Composition id="MediaScene-demo-v" component={MediaSceneDemo as React.FC<any>} width={1080} height={1920} fps={30} durationInFrames={330} defaultProps={{ medium: "cut-paper" }} />
     <Composition id="MediaIconSheet" component={IconSheet as React.FC<any>} width={1920} height={1080} fps={30} durationInFrames={1} defaultProps={{ medium: "crosshatch" }} />
+    <Composition id="ChatStory" component={ChatStory as React.FC<any>} width={1080} height={1920} fps={30} durationInFrames={210} defaultProps={{ cfg: DEMO_CHAT }} calculateMetadata={({ props }: { props: any }) => ({ durationInFrames: Math.round(props.cfg.duration * 30), ...(props.size ? { width: props.size[0], height: props.size[1] } : {}) })} />
+    <Composition id="DataRace" component={DataRace as React.FC<any>} width={1920} height={1080} fps={30} durationInFrames={Math.round(raceLength(DEMO_RACE) * 30)} defaultProps={{ cfg: DEMO_RACE }} calculateMetadata={({ props }: { props: any }) => ({ durationInFrames: Math.round(raceLength(props.cfg) * 30), ...(props.size ? { width: props.size[0], height: props.size[1] } : {}) })} />
+    <Composition id="Countdown" component={Countdown as React.FC<any>} width={1080} height={1920} fps={30} durationInFrames={Math.round(countLength(DEMO_COUNT) * 30)} defaultProps={{ cfg: DEMO_COUNT }} calculateMetadata={({ props }: { props: any }) => ({ durationInFrames: Math.round(countLength(props.cfg) * 30), ...(props.size ? { width: props.size[0], height: props.size[1] } : {}) })} />
     <Composition id="MediaGallery" component={MediaGallery as React.FC<any>} width={1920} height={760} fps={30} durationInFrames={1} defaultProps={{ t: 2.8 }} />
     <Composition id="CardGallery" component={CardGallery as React.FC<any>} width={1920} height={2920} fps={30} durationInFrames={1} defaultProps={{}} />
     <Composition id="FootageEdit" component={FootageEdit as React.FC<any>} width={1920} height={1080} fps={30} durationInFrames={30}

@@ -2,6 +2,7 @@
 // Tier 1 takes over the frame (stat, thesis, section, quote); tier 2 keeps the footage visible and lives in a panel
 // zone (right third on 16:9, top band on 9:16): label, list, lower, versus. Every card enters with its style's motion
 // (several properties at once, staggered children) and leaves faster than it came; list items can land on words.
+import { PERSONA, EASE } from "../motion";
 import React from "react";
 import REG from "../../../styles/cards.json";
 import { FONT, fw, type FontKey } from "../shots/prims";
@@ -15,6 +16,8 @@ const MOT = REG.motions as Record<string, { enter: number; ease: string; oversho
 const clamp = (x: number, a = 0, b = 1) => Math.max(a, Math.min(b, x));
 const ease = (x: number, kind: string, o = 1.4) => {
   x = clamp(x);
+  if (kind === "premium") return EASE.premium(x);
+  if (kind === "expo") return EASE.expo(x);
   if (kind === "back") { const c = o + 1; return 1 + c * Math.pow(x - 1, 3) + o * Math.pow(x - 1, 2); }
   if (kind === "sine") return 0.5 - Math.cos(Math.PI * x) / 2;
   return 1 - Math.pow(1 - x, 3);
@@ -33,7 +36,7 @@ function countUp(v: string, k: number) {
 export type CardProps = { card: CardId; style: string; t: number; at: number; dur: number; data: Record<string, any>; W: number; H: number; itemTimes?: number[] };
 
 export const Card: React.FC<CardProps> = ({ card, style, t, at, dur, data, W, H, itemTimes }) => {
-  const S = CARD_STYLES.find((s) => s.id === style) ?? CARD_STYLES[0], P = S.palette as Record<string, string>, M = MOT[S.motion] ?? MOT.confident;
+  const S = CARD_STYLES.find((s) => s.id === style) ?? CARD_STYLES[0], P = S.palette as Record<string, string>, M = (PERSONA as Record<string, any>)[S.motion] ?? MOT[S.motion] ?? MOT.confident;
   const u = Math.min(W, H) / 1080, vertical = W / H < 1.2, since = t - at, left = at + dur - t;
   if (since < 0 || left < 0) return null;
   const inK = (d = 0) => ease((since - d) / M.enter, M.ease, M.overshoot), outK = 1 - ease((M.exit - left) / M.exit, "out");

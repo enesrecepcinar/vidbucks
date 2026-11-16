@@ -13,6 +13,7 @@ import { loadFont as fPix } from "@remotion/google-fonts/Silkscreen";
 import { loadFont as fInter } from "@remotion/google-fonts/Inter";
 import { loadFont as fBlack } from "@remotion/google-fonts/ArchivoBlack";
 import { KitTiming } from "../time";
+import { Persona, PersonaName, persona, MEDIUM_PERSONA, secondary, entrance } from "../motion";
 import {
   Pt, clamp, seg, out, pop, smooth, io, path, ellipse, rect, Ink, Hatch, Paper, PaperDefs, Cut, RisoDefs, RisoPrint, RISO,
   PixelCanvas, ditherBand, IsoBox, iso, ISO, MC,
@@ -44,7 +45,7 @@ function figures(beat: MediaBeat, w: number, h: number, t0: number, times: numbe
   const x = !land || !beat.side ? 0.5 : beat.side === "left" ? 0.33 : 0.67;
   return [{ icon: beat.icon ?? "star", label: beat.label, s: u * 0.25, at: t0, cx: w * x, cy }];
 }
-export type MediaCfg = { medium: Medium; beats: MediaBeat[]; captions?: boolean };
+export type MediaCfg = { medium: Medium; beats: MediaBeat[]; captions?: boolean; motion?: PersonaName };   // motion: one personality for the film (default by medium)
 
 /* ---------------------------------------------------------------- the icon library (unit coords, radius ~1) ---------------------------------------------------------------- */
 type Hue = "yellow" | "red" | "blue" | "green" | "brown" | "grey" | "dark";
@@ -135,7 +136,7 @@ function scribblePts(P: Pt[], gap = 14): Pt[] {
 }
 
 /* ---------------------------------------------------------------- one icon in one medium (SVG media) ---------------------------------------------------------------- */
-const IconSvg: React.FC<{ medium: Medium; icon: IconId; cx: number; cy: number; s: number; k: number; B: number; uid: string }> = ({ medium, icon, cx, cy, s, k, B, uid }) => {
+const IconSvg: React.FC<{ medium: Medium; icon: IconId; cx: number; cy: number; s: number; k: number; B: number; uid: string; P?: Persona }> = ({ P, medium, icon, cx, cy, s, k, B, uid }) => {
   const parts = (ICONS[icon] as Part[]).map((p) => (p.ring ? { ...p, closed: false, P: [...p.P, p.P[0]] } : p)), H = HUES[medium];
   if (medium === "riso") {
     const lift = (1 - out(k)) * s * 0.5;
@@ -147,7 +148,7 @@ const IconSvg: React.FC<{ medium: Medium; icon: IconId; cx: number; cy: number; 
     );
   }
   if (medium === "cut-paper") {
-    const p = pop(k), sc = 0.5 + 0.5 * p;
+    const p = P ? (P.overshoot > 0 ? pop(k, P.overshoot) : out(k)) : pop(k), sc = (P?.scaleFrom ?? 0.5) + (1 - (P?.scaleFrom ?? 0.5)) * p;   // the personality decides the bounce
     return (
       <g transform={`translate(${cx} ${cy}) scale(${sc}) translate(${-cx} ${-cy})`} opacity={clamp(k * 4)}>
         {parts.map((pt, i) => pt.closed ? <Cut key={i} P={place(pt.P, cx, cy, s)} fill={H[pt.hue]} seed={i + 3} B={B} shadow={i === 0 || pt.hue !== "dark"} />
@@ -193,11 +194,12 @@ const IconSvg: React.FC<{ medium: Medium; icon: IconId; cx: number; cy: number; 
 /* ---------------------------------------------------------------- the beat layer per medium ---------------------------------------------------------------- */
 type BeatProps = { cfg: MediaCfg; beat: MediaBeat; t0: number; t: number; B: number; w: number; h: number; uid: string; times: number[] };
 const BeatSvg: React.FC<BeatProps> = ({ cfg, beat, t0, t, B, w, h, uid, times }) => {
+  const P = persona(cfg.motion ?? MEDIUM_PERSONA[cfg.medium]), tempo = P.enter / 0.35;   // draw-on times scale with the personality
   const m = cfg.medium, u = Math.min(w, h), cx = w / 2, cy = h * (h > w ? 0.38 : 0.44);
   const color = m === "math" ? MC.white : m === "isometric" ? ISO.accent : m === "riso" ? RISO.teal : "#2a2420";
   const font = m === "math" ? SERIF : m === "isometric" ? SANS : m === "riso" ? BLACK : HAND;
   if (beat.kind === "number" && beat.big) {
-    const txt = counted(beat.big, seg(t, t0, 0.9)), size = u * (beat.big.length > 6 ? 0.2 : 0.28), sc = m === "cut-paper" ? pop(seg(t, t0, 0.5)) : 1;
+    const txt = counted(beat.big, seg(t, t0, 0.9 * tempo)), size = u * (beat.big.length > 6 ? 0.2 : 0.28), sc = m === "cut-paper" ? pop(seg(t, t0, 0.5)) : 1;
     return (
       <g opacity={clamp(seg(t, t0, 0.15))}>
         {m === "cut-paper" && <Cut P={rect(cx - size * 0.4 * txt.length * 0.62 - 40, cy - size * 0.82, size * 0.8 * txt.length * 0.62 + 80, size * 1.05)} fill="#fbf6ea" seed={21} B={B} />}
@@ -223,17 +225,17 @@ const BeatSvg: React.FC<BeatProps> = ({ cfg, beat, t0, t, B, w, h, uid, times })
   }
   const still = m === "math", figs = figures(beat, w, h, t0, times);
   const fig = (F: Fig, n: number) => {
-    const live = t - F.at, kk = seg(t, F.at, m === "math" ? 0.9 : m === "sketchbook" ? 1.2 : 0.7), ly = F.cy - F.s * 1.35, fsz = u * (figs.length > 1 ? 0.052 : 0.062);
+    const live = t - F.at, kk = seg(t, F.at, (m === "math" ? 0.9 : m === "sketchbook" ? 1.2 : 0.7) * tempo), ly = F.cy - F.s * 1.35, fsz = u * (figs.length > 1 ? 0.052 : 0.062);
     const bob = still ? 0 : Math.sin(live * 2.2 + n) * u * 0.008, sway = still ? 0 : Math.sin(live * 1.4 + 1 + n) * 2.2;   // idle life: never a frozen picture
     if (t < F.at - 0.01) return null;
     return (
       <g key={n}>
-        <g transform={`translate(0 ${bob}) rotate(${sway} ${F.cx} ${F.cy + F.s})`}><IconSvg medium={m} icon={F.icon} cx={F.cx} cy={F.cy} s={F.s} k={kk} B={B} uid={`${uid}f${n}`} /></g>
+        <g transform={`translate(0 ${bob}) rotate(${sway} ${F.cx} ${F.cy + F.s})`}><IconSvg P={P} medium={m} icon={F.icon} cx={F.cx} cy={F.cy} s={F.s} k={kk} B={B} uid={`${uid}f${n}`} /></g>
         {F.label && (m === "cut-paper"
-          ? <g opacity={clamp(seg(t, F.at + 0.4, 0.2) * 3)} transform={`rotate(${n ? 3 : -3} ${F.cx} ${ly})`}><Cut P={rect(F.cx - F.label.length * fsz * 0.36 - 30, ly - fsz * 1.05, F.label.length * fsz * 0.72 + 60, fsz * 1.45)} fill="#fbf6ea" seed={33 + n} B={B} />
+          ? <g opacity={clamp(seg(t, secondary(F.at + 0.25 * tempo, P), 0.2) * 3)} transform={`rotate(${n ? 3 : -3} ${F.cx} ${ly})`}><Cut P={rect(F.cx - F.label.length * fsz * 0.36 - 30, ly - fsz * 1.05, F.label.length * fsz * 0.72 + 60, fsz * 1.45)} fill="#fbf6ea" seed={33 + n} B={B} />
               <text x={F.cx} y={ly} textAnchor="middle" fontFamily={HAND} fontSize={fsz} fill="#2a1d18">{F.label}</text></g>
           : <text x={F.cx} y={ly + fsz * 0.1} textAnchor="middle" fontFamily={font} fontSize={m === "riso" ? fsz * 0.8 : fsz} fill={m === "math" ? MC.blue : color} letterSpacing={m === "riso" ? 4 : 0}
-              opacity={out(seg(t, F.at + 0.35, 0.4))}>{m === "riso" ? F.label.toUpperCase() : F.label}</text>)}
+              opacity={out(seg(t, secondary(F.at + 0.2 * tempo, P), P.enter))}>{m === "riso" ? F.label.toUpperCase() : F.label}</text>)}
       </g>
     );
   };
@@ -259,8 +261,8 @@ const BeatSvg: React.FC<BeatProps> = ({ cfg, beat, t0, t, B, w, h, uid, times })
     <g>
       {figs.map(fig)}
       {link}
-      {rows.map((r, i) => { const at = times[i] ?? t0 + 0.5 + i * 0.6; if (t < at - 0.01) return null; const y = ry0 + i * rh, k3 = seg(t, at, 0.35), dot: Pt = [rx, y - rfs * 0.32];
-        return <g key={`r${i}`} opacity={clamp(k3 * 2)} transform={`translate(${(1 - out(k3)) * -30} 0)`}>
+      {rows.map((r, i) => { const at = times[i] ?? t0 + 0.5 + i * 0.6; if (t < at - 0.01) return null; const y = ry0 + i * rh, E = entrance(t, at, P, u / 1080, "left"), k3 = clamp(E.k), dot: Pt = [rx, y - rfs * 0.32];
+        return <g key={`r${i}`} opacity={E.opacity} transform={`translate(${(1 - out(k3)) * -30} 0)`}>
           {m === "cut-paper" ? <Cut P={ellipse(dot[0], dot[1], rfs * 0.28, rfs * 0.28, 14)} fill="#e2574c" seed={50 + i} B={B} shadow={false} />
             : m === "riso" ? <RisoPrint B={B} items={[{ d: path(ellipse(dot[0], dot[1], rfs * 0.28, rfs * 0.28, 16), true), tones: { pink: 1 } }]} />
             : m === "crosshatch" || m === "sketchbook" ? <Ink P={ellipse(dot[0], dot[1], rfs * 0.26, rfs * 0.26, 14)} closed B={B} w={6} seed={60 + i} frac={out(k3)} />
@@ -378,9 +380,9 @@ export const MediaScene: React.FC<{ cfg: MediaCfg; timing: KitTiming }> = ({ cfg
   const times = !beat ? [] : beat.kind === "compare" ? [wordAt(beat.w2) ?? t0 + 0.8] : beat.kind === "list" ? (beat.items ?? []).map((r, i) => wordAt(r.w) ?? t0 + 0.5 + i * 0.6) : [];
   // camera: a slow push per beat, a small settle on entry (math and isometric stay still: they are diagrams)
   // camera: hand-made media never hold a dead frame - a slow push and a drift whose direction alternates per beat
-  const live = clamp((t - t0) / 5), dir = bi % 2 ? -1 : 1;
-  const push = m === "math" || m === "isometric" ? 1 : 1 + 0.07 * io(live) + (m === "cut-paper" ? 0.025 * (1 - out(seg(t, t0, 0.4))) : 0);
-  const drift = m === "math" || m === "isometric" ? 0 : dir * w * 0.012 * (io(live) - 0.5);
+  const P = persona(cfg.motion ?? MEDIUM_PERSONA[m]), live = clamp((t - t0) / 5), dir = bi % 2 ? -1 : 1;
+  const push = m === "math" || m === "isometric" ? 1 : 1 + P.push * io(live) + (P.overshoot > 0 ? 0.025 * (1 - out(seg(t, t0, P.enter))) : 0);
+  const drift = m === "math" || m === "isometric" ? 0 : dir * w * P.drift * (io(live) - 0.5);
   if (!beat) return null;
   return (
     <AbsoluteFill style={{ background: m === "math" ? MC.bg : "#fff" }}>
@@ -408,7 +410,7 @@ export const DEMO_CFG = (medium: Medium): MediaCfg => ({ medium, beats: [
   { line: 1, kind: "object", icon: "house", label: "one house" }, { line: 2, kind: "number", big: "4,500", label: "homes by 1900" },
   { line: 3, kind: "compare", icons: ["house", "coin"], labels: ["homes", "money"], link: "to", w2: 2 }, { line: 4, kind: "list", icon: "clock", label: "time", items: [{ text: "rent", w: 1 }, { text: "debt", w: 2 }, { text: "nothing left", w: 3 }] },
 ] });
-export const MediaSceneDemo: React.FC<{ medium?: Medium }> = ({ medium = "crosshatch" }) => <MediaScene cfg={DEMO_CFG(medium)} timing={DEMO_TIMING} />;
+export const MediaSceneDemo: React.FC<{ medium?: Medium; motion?: PersonaName }> = ({ medium = "crosshatch", motion }) => <MediaScene cfg={{ ...DEMO_CFG(medium), motion }} timing={DEMO_TIMING} />;
 
 /** every icon in one SVG medium, finished: the sheet to check the library (pixel and isometric reuse the same outlines) */
 export const IconSheet: React.FC<{ medium?: Medium }> = ({ medium = "crosshatch" }) => {

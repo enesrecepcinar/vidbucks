@@ -1,0 +1,115 @@
+{
+ "title": "I lent my neighbour a ladder. This is what came back.",
+ "contact": {
+  "name": "Neighbour (Flat 4)",
+  "color": "#e8875b"
+ },
+ "theme": "night",
+ "accent": "blue",
+ "motion": "snappy",
+ "messages": [
+  {
+   "from": "them",
+   "text": "Hey! Thanks again for the ladder.",
+   "typingAt": 2.3,
+   "at": 3.8,
+   "voice": [
+    3.85,
+    6.2
+   ]
+  },
+  {
+   "from": "me",
+   "text": "No problem. Did the gutter get sorted?",
+   "typeFrom": 7.67,
+   "at": 9.47,
+   "voice": [
+    9.52,
+    12.745
+   ]
+  },
+  {
+   "from": "them",
+   "text": "Sort of. Quick question though.",
+   "typingAt": 14.415,
+   "at": 15.824,
+   "voice": [
+    15.874,
+    18.024
+   ]
+  },
+  {
+   "from": "them",
+   "text": "How attached are you to the ladder?",
+   "typing": 2.2,
+   "typingAt": 19.414,
+   "at": 21.614,
+   "voice": [
+    21.664,
+    23.864
+   ]
+  },
+  {
+   "from": "me",
+   "text": "...why?",
+   "typeFrom": 25.414,
+   "at": 25.914,
+   "voice": [
+    25.964,
+    27.139
+   ]
+  },
+  {
+   "from": "system",
+   "text": "Today 18:42",
+   "at": 27.689
+  },
+  {
+   "from": "them",
+   "text": "It's fine. It's mostly fine.",
+   "typingAt": 28.379,
+   "at": 29.652,
+   "voice": [
+    29.702,
+    32.102
+   ]
+  },
+  {
+   "from": "them",
+   "text": "It is now two slightly shorter ladders.",
+   "typing": 1.8,
+   "reaction": "😂",
+   "typingAt": 33.372,
+   "at": 35.172,
+   "voice": [
+    35.222,
+    38.072
+   ],
+   "reactAt": 35.772
+  },
+  {
+   "from": "me",
+   "text": "You cut my ladder in HALF?",
+   "typeFrom": 39.782,
+   "at": 41.582,
+   "voice": [
+    41.632,
+    43.957
+   ]
+  },
+  {
+   "from": "them",
+   "text": "I prefer to think I doubled it.",
+   "reaction": "❤️",
+   "typingAt": 45.147,
+   "at": 46.556,
+   "voice": [
+    46.606,
+    48.906
+   ],
+   "reactAt": 47.156
+  }
+ ],
+ "duration": 51.06,
+ "audio": "voices.wav"
+}

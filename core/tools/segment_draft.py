@@ -146,6 +146,14 @@ def list_items(text):
         if not c or len(c) > 2: return None
         items.append({"text": " ".join(c).lower(), "w": st})
     return items
+def persona_for_tone(tone):
+    """a brief's tone -> a motion personality (mirror of personaForTone in src/kits/motion.ts)"""
+    t = (tone or "").lower()
+    for name, pat in (("premium", r"serious|finan|luxury|premium|ciddi|lüks|finans"), ("calm", r"calm|reflect|wellness|sad|sakin|hüzün|duygu"),
+                      ("playful", r"fun|kids|play|humou?r|eğlen|çocuk|komik"), ("snappy", r"hype|sport|game|fast|energy|enerji|hızlı|oyun"),
+                      ("confident", r"pro|corporate|explain|product|kurumsal|ürün|anlat")):
+        if re.search(pat, t): return name
+    return None
 def content_word(text):
     ws = [w.strip(".,:;!?\"'’()").split("'")[0].split("’")[0] for w in text.split()]
     ws = [w for w in ws if w and fold(w) not in STOP and not any(ch.isdigit() for ch in w)]
@@ -266,7 +274,8 @@ for sg in P["segments"]:
                 ws = text.strip(" .!?").split()                # nothing to draw honestly: show the words that matter
                 phrase = (" ".join(ws) if len(ws) <= 5 else " ".join([w for w in ws if fold(w.strip(",;:")) not in STOP][:3])).strip(",;:. ")
                 beats.append({"line": lid, **at, "kind": "title", "text": phrase})
-        seg["data"] = {"medium": (sg["preset"] or {}).get("medium", "crosshatch"), "beats": beats}
+        mot = persona_for_tone(B.get("tone"))           # one motion personality per film (src/kits/motion.ts); default by medium
+        seg["data"] = {"medium": (sg["preset"] or {}).get("medium", "crosshatch"), "beats": beats, **({"motion": mot} if mot else {})}
     else:
         seg["data"] = None; seg["todo"] = f"no renderer for {sg['style']} yet: build its kit (skill vidbucks-style-library)"
     segments.append(seg)

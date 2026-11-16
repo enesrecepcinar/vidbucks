@@ -75,6 +75,9 @@ final and/ve: each row lands on its word, the lead-in keeps its last word, the l
 Single objects alternate centre / left / right; a year beside another number makes the number the hero ("4,500 · 1900"), and a
 thousands group Whisper split ("4" ",500") is joined. The first beat of a segment starts 0.2 s before frame 0, so a film (or an
 iris) opens on a drawing being finished, never blank paper. The camera pushes 7 % and drifts per beat (direction alternates).
+**Motion:** `cfg.motion` picks one personality from `src/kits/motion.ts` (default by medium: crosshatch/sketchbook calm,
+cut-paper playful, riso confident, pixel snappy, isometric/math premium); draw-on times, the bounce, label lag (secondary
+motion), list-row entrances and the camera push all follow it. Sheet: same beat under four personalities (`MediaScene-demo`, prop `motion`).
 **Sound:** `tools/media_cues.py --edit edit.json --timing timing.json --out cues.json` -> `sfx_synth.py` -> `mix_film.py`:
 one hit per beat in the medium's voice (pencil / paper / plate slide / chime / snap / tick), ticks + thunk for a counted
 number, a stamp for a year, whoosh or impact for a comparison, a tap per list row, whoosh at a change of medium.
@@ -101,6 +104,20 @@ opens from it; the new scene starts half-drawn so the window shows a world), `Be
 behind its trailing edge). A beat-cut piece cuts hard; a morph-joined piece keeps at most one hard cut (the payoff).
 Registry styles drawn in the nearest medium: colored-pencil, urban-sketch, printed-long-take (crosshatch); crayon-book,
 crayon-world, paper-popup (cut-paper); pixel-rpg, microgame (pixel); isometric-picture-book, precise-mechanism, white-model (isometric).
+
+## Format kits (`src/kits/chat`, `src/kits/data`, `src/kits/list`)
+All three are responsive (9:16 keeps text clear of the platform UI; 16:9 re-lays out), read `src/kits/motion.ts`, and take
+`--props {"cfg": ..., "size": [w, h]}` (duration comes from the data).
+- **ChatStory** (`ChatStory`): the thread is data; `tools/chat_story.py plan` turns it into a timed file (read-gap = reading time
+  of the previous bubble, typing indicator before received messages, the composer types sent ones, optional `--tts` voices
+  per side that the thread waits for) and the cues (keys, send pop, receive chime, reaction). Text ~50 px at 1080 wide; on
+  16:9 the newest message is repeated large beside the phone. The title card hides the phone (OCR reads UI text through a
+  97 % veil). Fictional people only; a generic messenger, never an app's logo or exact chrome.
+- **DataRace** (`DataRace`): keyframes per period; values interpolate linearly, ranks are averaged over 0.3 s so overtakes
+  slide, the scale eases to the leader, gridlines on 1-2-5 steps, the label column fits the longest name, the period label
+  stays readable (>= 3:1). `source` is required; data that is not real says so.
+- **Countdown** (`Countdown`): N..1 with a rank slam, whip slide (direction alternates), rail, secondary title and note, an
+  icon (media library) or a picture, a slow push while each entry holds, and the one flash on #1.
 
 ## Mixing kits
 ```tsx

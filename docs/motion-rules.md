@@ -22,3 +22,23 @@
 20. **Review sheets before "done":** `python core/tools/review_sheets.py <render> [--ref <reference>]` writes contact (2 fps), cuts (3 frames either side of every cut), first 2.5 s, phone width (360 px) and, with a reference, REFERENCE | OURS pairs per second and a stacked sync video. Look at every sheet; a one-frame empty panel or a black slide-in only shows on the cut strips.
 21. **Text is measured, not eyeballed:** `python core/tools/text_check.py <render>` OCRs every half second and fails on text touching the frame edge, two texts overlapping, or contrast under 2:1 lasting a second or more (warns under 3:1, outside the 4 % title-safe margin, and under the phone UI on 9:16). Panel text is sized to its zone; upcoming list items stay readable (>= 0.45 opacity).
 22. **Big moments land on the music:** with a real track, map it (`beatmap.py analyze`) and put reveals, cards and cutaways on a beat or a hit when one is within 0.15 s (0.10 s for small entrances); the drop goes on the key visual; never drag a moment away from its word to reach a beat.
+23. **One motion personality per film, from code.** `core/src/kits/motion.ts` is the motion language: `calm` (sine, 0.6 s,
+    no bounce), `premium` (decelerate, 0.5 s, no overshoot: serious and financial content), `confident` (ease-out 0.35 s,
+    the default), `playful` (back-ease, 10-20 % overshoot), `snappy` (expo-out 0.22 s, hard landings). New compositions
+    import `persona()`, `entrance()`, `staggerAt()`, `secondary()` instead of hand-typed durations; MediaScene and the card
+    library already do. A brief's `tone` picks it (`personaForTone` / `segment_draft.persona_for_tone`), else the medium's default.
+24. **Curves by role:** enter = ease-out (`EASE.out`), exit = ease-in at about half the time (`EASE.in`), a move that stays
+    on screen = ease-in-out (`EASE.inOut`); `EASE.linear` only for loops. Two curves per film, a third must earn its place.
+25. **Duration follows distance** (`dur(P, distance)`): a 20 px nudge and a full-width slide must not share a duration.
+26. **Groups reveal in under ~0.8 s** (`staggerAt` caps the offset), top-to-bottom or outward from the focal point, and at
+    most a third of a group moves at once (`maxMoving`); everything moving together is noise with no focal point.
+27. **Secondary motion:** attached parts (label, shadow, tag) settle 40-120 ms after the body (`secondary(at, P)`); a hero
+    that lands with its label at the same frame looks pasted.
+28. **Three layers:** hero (boldest, slowest, lands on the beat), support (smaller, faster, out of the way), texture
+    (subliminal loops). If two elements compete for the eye, demote one. One "wow" moment per piece.
+29. **Restraint:** no overshoot on serious or financial content; never loop-animate text that is still being read; never
+    stack transitions (a wipe and a spin and a fade).
+30. **Colour moves through OKLCH** (`mixOklch(a, b, k)`), never raw sRGB: blue -> orange in sRGB passes through grey.
+31. **Speed ramps for impacts** (`speedRamp(t, hit)`): feed the warped time to the scene's animations; the helper slows to
+    25 % into the hit and pays the time back right after, so the picture is in sync with the sound again ~1 s later.
+

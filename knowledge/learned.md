@@ -264,3 +264,17 @@ No downloading other channels' videos, no Google Images scraping, only CC0/CC BY
   0.2 s before frame 0 (fully drawn = a static hook, not drawn = blank paper). The quality gate measures life at 64x36, where
   a slow drift and a boiling line count as still: drawn media sit near 93 % "still" under profile layers (WARN, not FAIL);
   do not add fake motion to beat the number, check the cut strips instead.
+
+- 2026-11-16 · Motion quality package: `src/kits/motion.ts` is now the one motion language (5 personalities, role curves,
+  distance-scaled durations, capped stagger, secondary lag, OKLCH colour mixing, a sync-safe speed ramp); MediaScene and the
+  card library read it, the draft maps a brief's tone to it, motion-rules 23-31 document it. Checked: bezier ends at 0 and 1,
+  the ramp is monotonic and back in sync 1.1 s after the hit, 20 staggered items finish at 0.8 s, OKLCH blue -> orange has a
+  vivid midpoint; the four-personality filmstrip shows the difference (snappy label at +0.22 s, calm at +0.65 s).
+  Before writing new motion, import from motion.ts instead of typing durations.
+
+- 2026-11-16 · Three format kits: ChatStory (+ tools/chat_story.py), DataRace, Countdown; demos in exports/ pass the quality
+  gate (profile motion) and the text gate. Lessons: chat text must be ~50 px at 1080 wide (36 px read as a screenshot, not a
+  video); OCR reads UI text through a 97 % title veil, so hide the layer instead; a period watermark at 22 % failed contrast
+  (it carries information: 50 %); 6 items in a 10-row chart left half the frame empty (rows = min(top, items)); whip-slide
+  lists froze 2 s per entry until a slow push and an icon float were added; a music-only mix needs its own loudness pass
+  (single-pass loudnorm on a short bed landed at -18.4 LUFS).

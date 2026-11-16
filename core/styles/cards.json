@@ -1,26 +1,240 @@
 {
-  "about": "Motion-graphic card library. A STYLE is a visual identity (palette, type pair, motion feel, texture); a CARD is a layout with named slots. Tier 1 cards take over the whole frame; tier 2 cards keep the speaker or footage visible and live in a panel zone (right third on 16:9, top band on 9:16). Card id = <style>.<card>. Use from FootageEdit overlays: {\"kind\": \"card\", \"card\": \"stat\", \"style\": \"neon-tech\", \"at\"|\"word\", \"dur\", \"data\": {...}}.",
-  "styles": [
-    { "id": "ink-editorial", "name": "Ink Editorial", "dark": true, "palette": { "bg": "#111111", "panel": "#1b1b1b", "fg": "#f4efe6", "dim": "#8d877d", "accent": "#ff5a3c" }, "fonts": { "display": "dmserif", "text": "inter" }, "motion": "confident", "texture": "grain", "suits": ["news", "essay", "business", "history"] },
-    { "id": "swiss-paper", "name": "Swiss Paper", "dark": false, "palette": { "bg": "#f2efe8", "panel": "#ffffff", "fg": "#111111", "dim": "#77736b", "accent": "#e2231a" }, "fonts": { "display": "archivo", "text": "inter" }, "motion": "snappy", "texture": "grid", "suits": ["tutorial", "data", "design", "explainer"] },
-    { "id": "neon-tech", "name": "Neon Tech", "dark": true, "palette": { "bg": "#07090f", "panel": "#0d1220", "fg": "#e6f6ff", "dim": "#5b6b85", "accent": "#2de2e6", "accent2": "#ff3cac" }, "fonts": { "display": "unbounded", "text": "grotesk" }, "motion": "snappy", "texture": "glow", "suits": ["tech", "ai", "product", "gaming"] },
-    { "id": "warm-doc", "name": "Warm Documentary", "dark": true, "palette": { "bg": "#2a2420", "panel": "#3a322c", "fg": "#f3e7d3", "dim": "#a8977f", "accent": "#e3a22c" }, "fonts": { "display": "playfair", "text": "serif" }, "motion": "calm", "texture": "grain", "suits": ["history", "nostalgia", "story", "interview"] },
-    { "id": "pop-print", "name": "Pop Print", "dark": false, "palette": { "bg": "#fff3d6", "panel": "#ffffff", "fg": "#1b1b1b", "dim": "#6d6152", "accent": "#ff4f9a", "accent2": "#2b6cff" }, "fonts": { "display": "bangers", "text": "rubik" }, "motion": "playful", "texture": "halftone", "suits": ["fun", "kids", "lifestyle", "comedy"] }
-  ],
-  "motions": {
-    "confident": { "enter": 0.35, "ease": "out", "stagger": 0.08, "exit": 0.18 },
-    "snappy": { "enter": 0.22, "ease": "back", "overshoot": 1.2, "stagger": 0.06, "exit": 0.12 },
-    "calm": { "enter": 0.6, "ease": "sine", "stagger": 0.14, "exit": 0.3 },
-    "playful": { "enter": 0.4, "ease": "back", "overshoot": 2.2, "stagger": 0.09, "exit": 0.16 }
+ "about": "Motion-graphic card library. A STYLE is a visual identity (palette, type pair, motion feel, texture); a CARD is a layout with named slots. Tier 1 cards take over the whole frame; tier 2 cards keep the speaker or footage visible and live in a panel zone (right third on 16:9, top band on 9:16). Card id = <style>.<card>. Use from FootageEdit overlays: {\"kind\": \"card\", \"card\": \"stat\", \"style\": \"neon-tech\", \"at\"|\"word\", \"dur\", \"data\": {...}}. Motions mirror the personalities in src/kits/motion.ts (the code is the source of truth).",
+ "styles": [
+  {
+   "id": "ink-editorial",
+   "name": "Ink Editorial",
+   "dark": true,
+   "palette": {
+    "bg": "#111111",
+    "panel": "#1b1b1b",
+    "fg": "#f4efe6",
+    "dim": "#8d877d",
+    "accent": "#ff5a3c"
+   },
+   "fonts": {
+    "display": "dmserif",
+    "text": "inter"
+   },
+   "motion": "confident",
+   "texture": "grain",
+   "suits": [
+    "news",
+    "essay",
+    "business",
+    "history"
+   ]
   },
-  "cards": [
-    { "id": "stat", "tier": 1, "purpose": "one big number that carries the point; it counts up", "slots": { "value": "2,400 L", "label": "water for one person", "sub": "12 barrels x 200 L" } },
-    { "id": "thesis", "tier": 1, "purpose": "the one-line claim of the video or section, revealed word by word", "slots": { "text": "A better city is a sum of small fixes" } },
-    { "id": "section", "tier": 1, "purpose": "chapter marker between parts", "slots": { "num": "02", "title": "Streets and parking" } },
-    { "id": "quote", "tier": 1, "purpose": "a sentence someone said, with who said it", "slots": { "text": "It's not paranoia, it's insurance.", "who": "Uncle Ray" } },
-    { "id": "label", "tier": 2, "purpose": "a keyword or term while the speaker says it", "slots": { "text": "Normalcy bias" } },
-    { "id": "list", "tier": 2, "purpose": "items of a spoken list, each landing on its word", "slots": { "title": "What makes a city better", "items": ["Housing", "Industry", "Streets", "Schools"] } },
-    { "id": "lower", "tier": 2, "purpose": "who is speaking", "slots": { "name": "Fred Bashaw", "role": "real estate consultant" } },
-    { "id": "versus", "tier": 2, "purpose": "two options side by side", "slots": { "a": "Before", "b": "After", "label": "Parking downtown" } }
-  ]
+  {
+   "id": "swiss-paper",
+   "name": "Swiss Paper",
+   "dark": false,
+   "palette": {
+    "bg": "#f2efe8",
+    "panel": "#ffffff",
+    "fg": "#111111",
+    "dim": "#77736b",
+    "accent": "#e2231a"
+   },
+   "fonts": {
+    "display": "archivo",
+    "text": "inter"
+   },
+   "motion": "snappy",
+   "texture": "grid",
+   "suits": [
+    "tutorial",
+    "data",
+    "design",
+    "explainer"
+   ]
+  },
+  {
+   "id": "neon-tech",
+   "name": "Neon Tech",
+   "dark": true,
+   "palette": {
+    "bg": "#07090f",
+    "panel": "#0d1220",
+    "fg": "#e6f6ff",
+    "dim": "#5b6b85",
+    "accent": "#2de2e6",
+    "accent2": "#ff3cac"
+   },
+   "fonts": {
+    "display": "unbounded",
+    "text": "grotesk"
+   },
+   "motion": "snappy",
+   "texture": "glow",
+   "suits": [
+    "tech",
+    "ai",
+    "product",
+    "gaming"
+   ]
+  },
+  {
+   "id": "warm-doc",
+   "name": "Warm Documentary",
+   "dark": true,
+   "palette": {
+    "bg": "#2a2420",
+    "panel": "#3a322c",
+    "fg": "#f3e7d3",
+    "dim": "#a8977f",
+    "accent": "#e3a22c"
+   },
+   "fonts": {
+    "display": "playfair",
+    "text": "serif"
+   },
+   "motion": "calm",
+   "texture": "grain",
+   "suits": [
+    "history",
+    "nostalgia",
+    "story",
+    "interview"
+   ]
+  },
+  {
+   "id": "pop-print",
+   "name": "Pop Print",
+   "dark": false,
+   "palette": {
+    "bg": "#fff3d6",
+    "panel": "#ffffff",
+    "fg": "#1b1b1b",
+    "dim": "#6d6152",
+    "accent": "#ff4f9a",
+    "accent2": "#2b6cff"
+   },
+   "fonts": {
+    "display": "bangers",
+    "text": "rubik"
+   },
+   "motion": "playful",
+   "texture": "halftone",
+   "suits": [
+    "fun",
+    "kids",
+    "lifestyle",
+    "comedy"
+   ]
+  }
+ ],
+ "motions": {
+  "confident": {
+   "enter": 0.35,
+   "ease": "out",
+   "stagger": 0.08,
+   "exit": 0.18
+  },
+  "snappy": {
+   "enter": 0.22,
+   "ease": "back",
+   "overshoot": 1.2,
+   "stagger": 0.06,
+   "exit": 0.12
+  },
+  "calm": {
+   "enter": 0.6,
+   "ease": "sine",
+   "stagger": 0.14,
+   "exit": 0.3
+  },
+  "playful": {
+   "enter": 0.4,
+   "ease": "back",
+   "overshoot": 2.2,
+   "stagger": 0.09,
+   "exit": 0.16
+  },
+  "premium": {
+   "enter": 0.5,
+   "ease": "premium",
+   "stagger": 0.08,
+   "exit": 0.25
+  }
+ },
+ "cards": [
+  {
+   "id": "stat",
+   "tier": 1,
+   "purpose": "one big number that carries the point; it counts up",
+   "slots": {
+    "value": "2,400 L",
+    "label": "water for one person",
+    "sub": "12 barrels x 200 L"
+   }
+  },
+  {
+   "id": "thesis",
+   "tier": 1,
+   "purpose": "the one-line claim of the video or section, revealed word by word",
+   "slots": {
+    "text": "A better city is a sum of small fixes"
+   }
+  },
+  {
+   "id": "section",
+   "tier": 1,
+   "purpose": "chapter marker between parts",
+   "slots": {
+    "num": "02",
+    "title": "Streets and parking"
+   }
+  },
+  {
+   "id": "quote",
+   "tier": 1,
+   "purpose": "a sentence someone said, with who said it",
+   "slots": {
+    "text": "It's not paranoia, it's insurance.",
+    "who": "Uncle Ray"
+   }
+  },
+  {
+   "id": "label",
+   "tier": 2,
+   "purpose": "a keyword or term while the speaker says it",
+   "slots": {
+    "text": "Normalcy bias"
+   }
+  },
+  {
+   "id": "list",
+   "tier": 2,
+   "purpose": "items of a spoken list, each landing on its word",
+   "slots": {
+    "title": "What makes a city better",
+    "items": [
+     "Housing",
+     "Industry",
+     "Streets",
+     "Schools"
+    ]
+   }
+  },
+  {
+   "id": "lower",
+   "tier": 2,
+   "purpose": "who is speaking",
+   "slots": {
+    "name": "Fred Bashaw",
+    "role": "real estate consultant"
+   }
+  },
+  {
+   "id": "versus",
+   "tier": 2,
+   "purpose": "two options side by side",
+   "slots": {
+    "a": "Before",
+    "b": "After",
+    "label": "Parking downtown"
+   }
+  }
+ ]
 }

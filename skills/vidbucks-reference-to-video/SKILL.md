@@ -29,6 +29,9 @@ Goal: the reference's STYLE and QUALITY level, with the user's own content. The 
 | type (what you see) | route |
 |---|---|
 | kinetic typography, text-driven trailers | template **KineticType** (events on a BPM grid; words, glitch, orb, logo card, picture cards) |
+| text-message / chat story (Shorts "story in texts") | kit **ChatStory**: `tools/chat_story.py plan chat.json --out chat.timed.json --cues cues.json [--tts]` (drip timing, typing indicator, composer typing, reactions, read receipt, auto-scroll; one Kokoro voice per side), render `ChatStory` with `--props {"cfg": ...}`; fictional people only, a generic messenger look (no app branding) |
+| data race, ranked numbers over time | kit **DataRace** (`cfg.keys` keyframes; smooth overtakes, eased scale, nice gridlines, period label); the `source` line is mandatory, unreal data says "Illustrative data" |
+| top-N countdown / list video | kit **Countdown** (rank slam, whip slide, progress rail, #1 flash; icon from the media library or a licensed picture; `at` per item to sync with narration) |
 | object-metaphor / editorial / monochrome with a voice-over (paper grain, photographed objects, split frame, light cone) | template **ObjectStory** + licensed cut-outs (`fetch-stock` + `cutout.py`) + `vo_words.py` + pulse track |
 | minimal icon-and-line story, tiny serif captions typed with a voice | template **IconStory** (ballCoins, pendulum wave, dotted sphere; add icons in the same style) |
 | particle / 3D-scroll look, rope or bloom shapes | template **ParticleBloom** (a word as particles); a photoreal subject or a filmed room needs real plates |

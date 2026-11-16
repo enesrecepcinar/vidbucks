@@ -1,0 +1,17 @@
+{
+ "title": "I lent my neighbour a ladder. This is what came back.",
+ "contact": {"name": "Neighbour (Flat 4)", "color": "#e8875b"},
+ "theme": "night", "accent": "blue", "motion": "snappy",
+ "messages": [
+  {"from": "them", "text": "Hey! Thanks again for the ladder."},
+  {"from": "me", "text": "No problem. Did the gutter get sorted?"},
+  {"from": "them", "text": "Sort of. Quick question though."},
+  {"from": "them", "text": "How attached are you to the ladder?", "typing": 2.2},
+  {"from": "me", "text": "...why?"},
+  {"from": "system", "text": "Today 18:42"},
+  {"from": "them", "text": "It's fine. It's mostly fine."},
+  {"from": "them", "text": "It is now two slightly shorter ladders.", "typing": 1.8, "reaction": "😂"},
+  {"from": "me", "text": "You cut my ladder in HALF?"},
+  {"from": "them", "text": "I prefer to think I doubled it.", "reaction": "❤️"}
+ ]
+}
