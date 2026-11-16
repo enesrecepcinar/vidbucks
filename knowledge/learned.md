@@ -173,3 +173,94 @@ No downloading other channels' videos, no Google Images scraping, only CC0/CC BY
 - What: Whisper (faster-whisper) reads a raw numpy array as 16 kHz. Kokoro is 24 kHz: passing it raw stretched every word time by 1.5x. Resample before transcribe (make_narration.py already does; file paths are safe).
 - What: Commons returns HTTP 429 for full-size originals in a burst; ask for `iiurlwidth=1920` (a standard step) and pause between files.
 - How it is handled now: ShotFilm plays clips (`Pic.src` .mp4 + `in`), `montage` cuts on word indices, `tag` chapter pills, `pops` word-timed numbers, `after` bumper card, `brand` corner bug, treatments `vhs`/`kodak`, frame `inset`. Proof: `core/videos/films/fifties` (gate PASS, 16 cuts/min).
+
+## 2026-11-14 - animated version of a still-image stick-figure serial
+- What: a frame-difference scan in the Browser pane (canvas, 0.5 s steps) showed the reference is fully still between hard cuts (difference 0.0); its quality is the painted illustration + the writing. "Make it animated" therefore means a rigged character and moving light/camera, not motion added to stills.
+- What: the image-generation account had 0 credits and no unlimited allowance, so every set is drawn in code (`core/src/kits/bunker`: comic-ink sets with a 3-frame outline "boil", rigged `Hero` on the engine's FK poses, word-pinned events). Ask the user before spending credits on painted plates; code-drawn sets are the free default.
+- What: overlays that must stay put (countdown numbers, slams) go OUTSIDE the camera group, or they scale and drift with it; a camera that follows a runner needs the set wider than his whole path (black edge otherwise).
+- How it is handled now: demo `Bunker-demo` (65 s, gate PASS, 16.5 cuts/min), study in `knowledge/channel-studies/second-person-survival-serial.md`.
+
+## 2026-11-15 - editing the user's own gym clip (raw footage route)
+- What: a 4K HEVC phone clip had to be graded first: plain contrast/gamma buried a backlit subject; lifting the shadows with a curve (`curves=master='0/0.03 0.06/0.18 0.18/0.42 0.45/0.70 0.8/0.90 1/0.97'`) plus a warm/teal colour balance worked. Grade + denoise once in ffmpeg into a working copy, then edit in Remotion.
+- What: OffthreadVideo failed on 1620x2880 and 1440x2560 working copies with "Chrome rejecting the request because the disk space is low" while 1080x1920 worked; the disk was 98-99 % full. With little free space keep working copies at output size (1080x1920) and keep punch-ins modest (<= ~1.35x).
+- What: rep tops were found by eye on a 0.2 s labelled crop sheet; a motion-centroid signal was confused by head movement.
+- How it is handled now: `core/src/kits/gym/GymEdit.tsx` (segments with playbackRate for ramps, punch-in + flash + shake on beats, counter, cues, freeze ending), sound from a cue list on the measured tops (`videos/gym/cues.json`), music hard-stops on the freeze.
+
+## 2026-11-16 - quick wins from the community-repo batch
+- What: timing now has a forced-alignment option (`kit_timing.py --forced` -> `align_script.py`, stable-ts): the script's own words are placed on the narration, so spelled numbers ("eleven fifty two"), names and mishearings ("flash like" heard as "flashlight") no longer break word-pinned events. Tested on an English (163/163 words) and a Turkish film (48/48). Line starts become the first word's onset (~0.4 s later than a per-clip start).
+- What: `review_sheets.py` gives the strips a single-still review misses; on its first run it found a 0.4 s black gap behind a sliding panel in the bunker demo (40.1 s).
+- What: motion timing by feeling, spring presets, cut seams, caption limits, sound taste, mux-outside-the-renderer and review sheets are rules 13-20 in `docs/motion-rules.md`; "every note becomes a rule" is now in the revision protocol.
+- How it is handled now: use `--forced` for any narration whose script is known; run review sheets before showing a draft.
+
+## 2026-11-16 - new route: editing the user's own footage
+- What: `core/tools/footage.py` (transcribe -> pack -> tighten -> render -> verify -> finish) + skill `vidbucks-footage-edit` + Remotion `FootageEdit` (captions, title, name card, punch-in over a muted cut; sound muxed back by ffmpeg). All local (faster-whisper), no paid transcription.
+- What: verification needs two passes: whole-file re-transcription drifts near joins and flagged two healthy words; re-hearing a 4 s window around each suspect removed the false alarms, and a deliberately clipped word ("parks", 0.3 s cut out) was still caught.
+- What: cut strips showed head jumps at same-take joins; `jump_zoom` (default 1.1 in drafts) alternates full frame and a slight push-in on consecutive segments of one source.
+- What: this ffmpeg has no drawtext/subtitles filters, so captions and labels are always a Remotion layer.
+- How it is handled now: footage edits follow the skill; never show a cut before `footage.py verify` and the cut strips.
+
+## 2026-11-16 - long -> shorts and vertical reframe
+- What: `footage.py highlights` scores phrase runs (motion, relative loudness, sharpness, darkness, question/number and speech-rate bonus; never across a picture cut) and writes short EDLs, strongest moment first; `"aspect"` in an EDL reframes with a YuNet face track + dead zone + pan limit, as a piecewise ffmpeg crop expression (one encode, no Remotion needed for the crop).
+- What: a 3.5 min test became a 35 s 9:16 short, 96/96 words heard back. Limit seen on the contact sheet: in a three-person panel the camera drifted to the biggest face, not the speaker; tracking now strongly prefers the face it already follows; real active-speaker detection is still open.
+- How it is handled now: look at the short's contact sheet for multi-face shots before delivery.
+
+## 2026-11-16 - active speaker for vertical reframes
+- What: picking "the biggest face" drifted to a listener in panel shots. Mouth motion alone also failed: a listener turning his head moves the mouth box (33 vs 15 for the real speaker), and frame-by-frame decisions with hysteresis were 1-2.5 s late and grabbed whoever moved first.
+- What works now: mouth-vs-voice correlation (syllable rhythm) blended with head-gated mouth motion, camera motion cancelled by phase correlation, centred 1 s smoothing, Viterbi with a switch cost, 1.2 s minimum speaker shot, far switches as cuts. Synthetic two-speaker test switches at 4.2 s (truth 4.0); panel shots hold the presenter.
+- Lesson: when a test disagrees with my expectation, look at the evidence (mouth crops) before "fixing": one "wrong" pick was the man who actually spoke first.
+
+## 2026-11-16 - motion-graphic card library
+- What: `core/styles/cards.json` + `src/kits/cards/Cards.tsx`: 5 styles (ink-editorial, swiss-paper, neon-tech, warm-doc, pop-print; each a palette, type pair, motion feel, texture) x 8 cards in two tiers (tier 1 takeovers: stat with count-up, thesis word by word, section, quote; tier 2 panel cards that keep the footage visible: label, list with items landing on their words, lower, versus). `tools/cards.py list|suggest|gallery`; footage overlays `{"kind": "card", ...}`.
+- What: the first gallery squeezed 8 cards into one row and hid every tier-2 card (they live in the right-third zone); the first edit cut a label off at the frame edge. Text in a panel is now sized to the zone width.
+- How it is handled now: after adding a style or card, render the gallery and look; after an edit with cards, check a still at every card (a cropped label reads as "fine" on a thumbnail).
+
+## 2026-11-16 - text gate (text_check.py)
+- What: OCR boxes per half second -> CUT (touches the frame), OVERLAP (centres within half a line: stacked lines of one block are fine), CONTRAST (WCAG ink vs ground; FAIL < 2:1 for >= 1 s, shorter = entrance/exit WARN), SAFE (4 % margin, phone UI on 9:16), GARBLED (English: two+ long non-words, how OCR reads overlapping text). `footage.py finish` runs it automatically.
+- Found on first runs: dimmed "upcoming" list items at 0.18 opacity were unreadable (now 0.45); the bunker carriage clock is cut by the camera push; in-world text (signs, archive photos) needs `--ignore` with a reason, the tool cannot tell it from our overlays.
+
+## 2026-11-16 - B-roll engine for footage edits
+- What: `footage.py broll` plans word-anchored cutaway slots from noun phrases (spaCy), respecting the hook, cards/names and 2 s of face between cutaways; media through `media_hunt.py` (licensed photos/documents) or `broll-pick` (own footage, PD archive); `finish` renders full / panel / split B-roll and writes CREDITS.md.
+- What: first plan picked "hundreds", "men" and a person's name; people, quantities, abstractions and PERSON entities are now skipped. Licensed stock for a 1956 talk came back modern (skylines, private people): for period talk the right source is period archive footage, so `broll-pick` exists and the skill puts archive before stock. A paper document was cropped by cover-fit; light paper-like pictures are now shown whole.
+- How it is handled now: look at every candidate sheet; an empty slot beats a generic or anachronistic picture.
+
+## 2026-11-16 - beat map (beatmap.py)
+- What: tempo by onset autocorrelation with a 120 BPM prior, phase by an attack envelope over the WHOLE period, bar phase by bass energy, hits, quiet drops, intensity curve; `snap` within 0.15 s / 0.10 s; footage `finish` uses it for music in the EDL (snapped overlays + ducked mix).
+- Validation on synthetic tracks with known grids: tempo exact on 4/6, octave errors on 2/6 (140->70, 66->132), phase within ~10 ms on all once three bugs were fixed: (1) a decimated envelope indexed as 1000 Hz drifted 0.23 % (60 ms over 30 s); (2) a 5 ms envelope rippled with each bass cycle of a pitch-swept kick; (3) a quarter-beat search could not leave a coarse phase that had locked onto a reverb echo. Snapped overlays land within 11 ms of the true grid.
+- How it is handled now: pass --bpm when the user knows it; treat `low` confidence as "check by ear".
+
+## 2026-11-16 - every format from one footage edit
+- What: `footage.py formats` renders one EDL as 9:16 / 4:5 / 1:1 / 16:9 (per-shape reframe with the face / active-speaker camera, caption height per shape, panel cards in a top band on narrow shapes, full B-roll -> split on narrow shapes) and writes a side-by-side sheet; all four passed the text gate on the test edit.
+- What: the sheet showed a doubled "paper" behind a paper document; the extra layer is gone (a light document is already its own paper).
+- Open: the Remotion kits (ShotFilm, bunker, boards) still lay out for 1920x1080; reflowing them per shape is a separate job.
+
+## 2026-11-16 - approval gates (gates.py)
+- What: STORY (beat table: time, what, bridge, sound) -> LOOK (2-4 full frames side by side) -> BOARD (one numbered panel per beat, panels sent back by number); `check` blocks a full render until all three are approved; editing story.json after approval re-opens every gate (hash). Tested on the bunker demo with test approvals (removed afterwards).
+- What: board panels taken 0.6 s into a beat showed the moment before its action; panels now sit 60 % into the beat.
+- How it is handled now: new builds go through the gates with one-click questions; revisions of an approved film skip them.
+
+- 2026-11-16 · Media kit (`src/kits/media/Media.tsx`): seven drawing media rebuilt in our own code after studying community style
+  kits (ideas only): boiling ink + hatching, sketchbook, cut paper, riso three-plate halftone, low-res pixel with palette snap,
+  isometric hairline, math stage; bridges Iris (circle/torn/star) and Beam. Registry: renderer "media" (author) for 11 styles that
+  had no engine + 7 media of our own (111 styles). Lessons: an SVG mask filter must composite SourceGraphic IN the mask, not the
+  other way round (the riso plates came out white); a scene that opens through an iris must start half-drawn (blank paper in the
+  window reads as an error); keep isometric stacks inside the frame when they explode (the top layer left the frame at gap 120).
+
+- 2026-11-16 · Automatic media scenes (MediaScene + segment_draft "media"): a 65 s narration renders in three media without
+  hand-drawn art. Lessons: one picture per LINE left 8+ s stills -> beats are per sentence now (median shot 4.5 s); a random
+  fallback icon (a box for "tunnel") is worse than words -> fallback is a short title; English "on" matched Turkish "on" (ten)
+  in the spelled-number reader -> spelled numbers only when the timing language is tr; dimming unspoken caption words to 35 %
+  failed the contrast gate -> 72 %; a ring inside an icon (coin edge, globe meridian) must never be filled (`ring: true`).
+
+- 2026-11-16 · Media icons 17 -> 40 (train, tunnel, door, phone, city, car, ship, plane, key, lock, flame, wave, mountain, gear,
+  shield, envelope, flag, crown, eye, cloud, bolt, moon, burst). On the 65 s test the beats that had to fall back to words
+  dropped from 5 to 2 and every remaining icon names what the sentence is about. Same icon twice in a row is now skipped
+  (two "train" beats in a row read as a frozen picture). A cut-paper hue must differ from its wall (green tree on teal
+  stripes vanished). Renders failing with "getStaticCompositions is undefined" were a full disk, not a code error: check
+  `df -h` first; download caches (npm, pip, Homebrew) are the safe things to clear.
+
+- 2026-11-16 · Media beats: compare + list + side layout + automatic sound (media_cues.py). Lessons: Whisper split "4,500"
+  into "4" ",500" and every later word slid one line -> use `kit_timing.py --forced` for media films (the script's own words);
+  a year next to a number stole the hero -> the number wins, the year goes in the label; the first beat must start drawing
+  0.2 s before frame 0 (fully drawn = a static hook, not drawn = blank paper). The quality gate measures life at 64x36, where
+  a slow drift and a boiling line count as still: drawn media sit near 93 % "still" under profile layers (WARN, not FAIL);
+  do not add fake motion to beat the number, check the cut strips instead.

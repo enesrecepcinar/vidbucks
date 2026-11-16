@@ -10,6 +10,8 @@ board  -> one cluster per line along the wall: images whose keywords match the l
           quotes/documents as a typeset recreation, everything else as a card; camera keys land on each cluster as its
           line starts, then a pull-back. Time expressions only, so a new voice re-times the draft.
 layers -> skipped with a note: LayerScene art is authored by the agent (see docs/kits.md).
+media  -> one beat per line in the segment medium: a number line counts its number, a short first line is a title, every
+          other line gets an icon picked from its words (ICON_LEX) and its keyword as the label.
 The draft is a starting point: the agent refines items, words and camera, then renders Tpl-MultiStyle (or its own id)."""
 import argparse, json, pathlib, re, subprocess, sys, unicodedata
 
@@ -65,6 +67,96 @@ def keyword(l):
     ws = [w.strip(".,:;!?\"'") for w in l["text"].split()]
     caps = [w for w in ws[1:] if w[:1].isupper() and len(w) > 2]
     return (caps[0] if caps else max(ws, key=len)).split("'")[0].split("’")[0]
+
+
+# media: which icon a line gets (src/kits/media/MediaScene.tsx ICONS); English and Turkish stems, first match wins
+ICON_LEX = [("train", "train carriage railway rail metro subway wagon tren vagon metro raylı"), ("tunnel", "tunnel underground station bunker cave tünel yeraltı istasyon sığınak mağara"),
+    ("door", "door gate exit entrance kapı çıkış giriş"), ("phone", "phone call message text screen app telefon arama mesaj ekran uygulama"),
+    ("plane", "plane flight airport fly uçak uçuş havaalanı"), ("ship", "ship boat sea port sail gemi tekne liman"), ("car", "car drive traffic road highway araba araç trafik otoyol sürüş"),
+    ("burst", "blast explos bomb boom shock impact patlama bomba şok darbe"), ("bolt", "flash lightning electric power energy şimşek elektrik enerji"),
+    ("flame", "fire burn heat hot flame yangın ateş yan sıcak alev"), ("wave", "water flood ocean river wave rain su sel okyanus nehir dalga yağmur"),
+    ("mountain", "mountain hill climb peak dağ tepe zirve tırman"), ("city", "city town skyline downtown şehir kent kasaba"),
+    ("key", "key secret answer solution anahtar sır cevap çözüm"), ("lock", "lock safe security protect closed kilit güvenlik koru kapalı"),
+    ("gear", "machine engine system work factory process makine motor sistem fabrika süreç"), ("shield", "shield defend defence protect immune kalkan savun"),
+    ("envelope", "letter mail email message post mektup posta"), ("flag", "flag nation goal finish victory bayrak millet hedef zafer"),
+    ("crown", "king queen power rule empire throne kral kraliçe güç imparator taht"), ("eye", "see watch look eye notice saw görmek izle bak göz fark"),
+    ("cloud", "cloud weather storm sky bulut hava fırtına gökyüzü"), ("moon", "night moon sleep dark gece ay uyku karanlık"),
+    ("house", "house home building village street ev bina köy sokak mahalle"), ("coin", "money coin cash dollar price cost pay rich gold para lira dolar fiyat altın zengin ödeme maliyet"),
+    ("clock", "time clock hour minute second count late year day zaman saat dakika saniye say geç gün süre"), ("tree", "tree forest nature wood plant ağaç orman doğa bitki"),
+    ("heart", "love heart care feel kalp sevgi aşk duygu"), ("globe", "world earth country global planet dünya ülke küresel gezegen"),
+    ("person", "people person man woman child insan kişi adam kadın çocuk halk"), ("book", "book history story read school law kitap tarih hikaye okul yasa"),
+    ("chart", "grow rise data percent increase fall drop artış büyü veri oran yüzde düş"), ("bulb", "idea think discover invent mind fikir düşün keşif icat akıl"),
+    ("warning", "danger risk warn alert emergency shelter drill siren crisis war fear tehlike kriz savaş korku uyarı alarm patlama"), ("arrow", "move travel road journey yol yolculuk"),
+    ("box", "product box thing buy sell ship ürün kutu satın"), ("sun", "sun light lamp summer morning güneş ışık yaz sabah"), ("mug", "coffee tea cup drink kahve çay fincan içecek")]
+FALLBACK_ICONS = ["star", "bulb", "box", "arrow"]
+STOP = set("the a an and or but of to in on at for with from by as is are was were be been it its it's this that these those you your you're we our they their he she his her i me my not no so then there here what when where who how all any some just only very more most than into out up down over don't can't won't don doesn didn isn wasn ever never still also even about again one bir ve ile ama da de bu şu o bir için gibi çok daha en ne neden nasıl kim her hiç".split())
+def media_icon(text, k, avoid=None):
+    """the icon a sentence gets and the word that chose it (the label); never the same icon twice in a row (avoid)"""
+    ws = [w.strip(".,:;!?\"'’()") for w in text.split()]
+    for icon, lex in ICON_LEX:
+        stems = lex.split()
+        for w in ws:
+            fw = fold(w)
+            if icon != avoid and any(fw == st or (len(st) > 3 and fw.startswith(st)) for st in stems): return icon, w.lower()
+    return ("question" if text.strip().endswith("?") else FALLBACK_ICONS[k % len(FALLBACK_ICONS)]), None
+def sentences(l, min_s=1.4):
+    """(first word index, text) per sentence of a line; sentences shorter than min_s seconds join the previous one"""
+    W = l.get("words") or []
+    if not W: return [(0, l["text"])]
+    out, cur = [], [0, []]
+    for i, (w, a, b) in enumerate(W):
+        cur[1].append(w)
+        if w.rstrip("\"'”’)").endswith((".", "!", "?")) or i == len(W) - 1:
+            if out and (W[i][2] - W[cur[0]][1] < min_s or W[out[-1][2]][2] - W[out[-1][0]][1] < min_s):
+                out[-1] = (out[-1][0], out[-1][1] + " " + " ".join(cur[1]), i)
+            else: out.append((cur[0], " ".join(cur[1]), i))
+            cur = [i + 1, []]
+    return [(a, t) for a, t, _ in out]
+VS_WORDS = set("but instead versus vs than rather whereas unlike ama fakat oysa yerine değil karşın ancak".split())
+TO_WORDS = set("became becomes become turned turns into changed transformed replaced dönüştü dönüşür dönüştürdü haline yerini".split())
+def media_icons(text):
+    """every distinct icon a sentence names, with the word and its index in the sentence"""
+    found, seen = [], set()
+    for idx, w in enumerate(text.split()):
+        fw = fold(w.strip(".,:;!?\"'’()"))
+        for icon, lex in ICON_LEX:
+            if icon not in seen and any(fw == st or (len(st) > 3 and fw.startswith(st)) for st in lex.split()):
+                found.append((icon, w.strip(".,:;!?\"'’()").lower(), idx)); seen.add(icon); break
+    return found
+CONJ = {"and", "or", "ve", "veya", "ya", "ile"}
+def list_items(text):
+    """3+ short items separated by commas and a final and/ve ('food, water and air') -> [{text, w}], else None.
+    The lead-in before the first item keeps only its last word ('we need food' -> 'food'); the list ends at the item after
+    the conjunction, so a closing clause ('..., hepsi bitti') is not an item."""
+    ws = text.split(); chunks, cur, start, closing = [], [], 0, False
+    for i, w in enumerate(ws):
+        bare = fold(w.strip(".,;:!?"))
+        if bare in CONJ and chunks and not cur: closing = True; continue
+        if bare in CONJ and cur: chunks.append((start, cur)); cur = []; closing = True; continue
+        if not cur: start = i
+        cur.append(w.strip(".,;:!?\"'"))
+        if w.endswith((",", ".", ";", "!", "?")) or i == len(ws) - 1:
+            chunks.append((start, cur)); cur = []
+            if closing: break
+    if len(chunks) < 3: return None
+    items = []
+    for k, (st, c) in enumerate(chunks):
+        if k == 0 and len(c) > 2: st, c = st + len(c) - 1, c[-1:]
+        elif k == len(chunks) - 1 and len(c) > 2: c = c[:1]                 # the last item runs into the rest of the sentence ('ships all stopped')
+        if not c or len(c) > 2: return None
+        items.append({"text": " ".join(c).lower(), "w": st})
+    return items
+def content_word(text):
+    ws = [w.strip(".,:;!?\"'’()").split("'")[0].split("’")[0] for w in text.split()]
+    ws = [w for w in ws if w and fold(w) not in STOP and not any(ch.isdigit() for ch in w)]
+    return max(ws, key=len).lower() if ws else ""
+def media_label(l, n):
+    ws = [w.strip(".,:;!?\"'") for w in l["text"].split()]
+    i = next((j for j, w in enumerate(ws) if n.split(":")[0].rstrip("%") in w), None)
+    if i is not None and ":" in n: i += 1
+    after = ws[i + 1:i + 3] if i is not None else []
+    after = [w for w in after if fold(w) not in STOP]
+    return " ".join(after).lower() or content_word(l["text"])
 
 
 segments, maps = [], {}
@@ -134,6 +226,47 @@ for sg in P["segments"]:
         seg["data"] = {"width": a.width, "height": a.height, "fps": a.fps, "look": pr.get("look", "wall"), "grade": pr.get("grade", "natural"), "fadeIn": 0.001, "fadeOut": 0.01, "items": items, "camera": cam}
     elif sg["renderer"] == "layers":
         seg["data"] = None; seg["todo"] = "author LayerScene shots for these lines (docs/kits.md); run tools/layer_check.py"
+    elif sg["renderer"] == "media":
+        beats = []
+        for k, lid in enumerate(sg["lines"]):
+            l = lines[lid]; f = info[lid]["features"]
+            for w0, text in sentences(l):                      # a new picture per sentence, not per line (3-8 s rule)
+                sub = {"text": text, "words": (l.get("words") or [])[w0:]}
+                n = hero_number(sub) if any(ch.isdigit() for ch in text) or (T.get("lang") == "tr" and spelled(text)) else None   # English "on" is not Turkish ten
+                ws_ = [w for w, *_ in sub["words"]] or text.split()
+                ws_ = [w + ws_[q + 1] if re.fullmatch(r"\d{1,3}", w) and q + 1 < len(ws_) and re.fullmatch(r",\d{3}\S*", ws_[q + 1]) else w for q, w in enumerate(ws_)]
+                year = None
+                if n:                                          # a clock time Whisper split into "11" ".52" -> "11:52"
+                    for q in range(len(ws_) - 1):
+                        if ws_[q].strip(".,") == n and re.fullmatch(r"[.:]\d\d[.,]?", ws_[q + 1]): n = n + ":" + ws_[q + 1].strip(".:,"); break
+                at = {"w": w0} if w0 else {}
+                if n:                                          # a year beside another number: the number is the hero, the year its context
+                    nums = [x for x in (re.sub(r"[^\d.,:%]", "", w).strip(".,") for w in ws_) if x and x[0].isdigit()]
+                    year = next((x for x in nums if re.fullmatch(r"(1[0-9]{3}|20[0-9]{2})", x)), None)
+                    other = next((x for x in nums if x != year), None)
+                    if year and other and n == year: n = other
+                if n and ("year" in f or "number" in f or "percent" in f):
+                    lab = media_label(sub, n)
+                    if year and n != year: lab = f"{lab} · {year}".strip(" ·")
+                    beats.append({"line": lid, **at, "kind": "number", "big": n, "label": lab}); continue
+                fw = {fold(x.strip(".,:;!?\"'’()")) for x in text.split()}
+                found = media_icons(text)
+                items = list_items(text)
+                if items:                                      # a list: rows land on their own words
+                    beats.append({"line": lid, **at, "kind": "list", **({"icon": found[0][0], "label": found[0][1]} if found else {}),
+                                  "items": [{"text": it["text"], "w": w0 + it["w"]} for it in items[:5]]}); continue
+                if len(found) >= 2 and (fw & VS_WORDS or fw & TO_WORDS):   # two things set against each other, or one becoming the other
+                    (i1, l1, _), (i2, l2, x2) = found[0], found[1]
+                    beats.append({"line": lid, **at, "kind": "compare", "icons": [i1, i2], "labels": [l1, l2], "link": "to" if fw & TO_WORDS else "vs", "w2": w0 + x2}); continue
+                icon, word = media_icon(text, len(beats), beats[-1].get("icon") if beats else None)
+                if word:
+                    n_obj = sum(1 for b in beats if b["kind"] == "object")
+                    side = [None, "left", "right"][n_obj % 3]   # vary the composition: centre, left, right
+                    beats.append({"line": lid, **at, "kind": "object", "icon": icon, "label": word, **({"side": side} if side else {})}); continue
+                ws = text.strip(" .!?").split()                # nothing to draw honestly: show the words that matter
+                phrase = (" ".join(ws) if len(ws) <= 5 else " ".join([w for w in ws if fold(w.strip(",;:")) not in STOP][:3])).strip(",;:. ")
+                beats.append({"line": lid, **at, "kind": "title", "text": phrase})
+        seg["data"] = {"medium": (sg["preset"] or {}).get("medium", "crosshatch"), "beats": beats}
     else:
         seg["data"] = None; seg["todo"] = f"no renderer for {sg['style']} yet: build its kit (skill vidbucks-style-library)"
     segments.append(seg)

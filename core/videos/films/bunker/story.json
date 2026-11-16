@@ -1,0 +1,87 @@
+{
+ "title": "Last Train - Part 1 (demo)",
+ "idea": "A second-person survival story that teaches one real rule per beat",
+ "device": "the countdown to the blast is the spine; every rule lands on its word",
+ "format": "16:9 animated short",
+ "style": "comic ink, rigged hero",
+ "length_s": 65,
+ "beats": [
+  {
+   "t": 0.3,
+   "title": "Last train",
+   "what": "dozing hero, city lights stream past, train sways",
+   "bridge": "phones light one by one",
+   "sound": "train rumble; first glock pings"
+  },
+  {
+   "t": 7.45,
+   "title": "Phones light up",
+   "what": "every phone glows, hero jolts awake, ?!",
+   "bridge": "cut to the screen",
+   "sound": "three pings, a thump on the startle"
+  },
+  {
+   "t": 11.06,
+   "title": "The alert",
+   "what": "red phone close-up, three lines typed on the words",
+   "bridge": "back to a frozen carriage",
+   "sound": "alert chimes"
+  },
+  {
+   "t": 15.56,
+   "title": "Normalcy bias",
+   "what": "everyone frozen, caption card, 'it's fine' bubble",
+   "bridge": "the bubble pops",
+   "sound": "stamp on the term, pop on the bubble"
+  },
+  {
+   "t": 23.08,
+   "title": "Break the spell",
+   "what": "hero shakes it off, doors slide, he runs",
+   "bridge": "run into the cross-section",
+   "sound": "whoosh on the doors, footsteps"
+  },
+  {
+   "t": 27.55,
+   "title": "Down is good",
+   "what": "camera pulls out from the stairs to earth/rock/concrete layers",
+   "bridge": "cut to the platform",
+   "sound": "riser into the rule card"
+  },
+  {
+   "t": 32.7,
+   "title": "The flash",
+   "what": "tunnel goes white behind him, long shadow, DON'T LOOK BACK",
+   "bridge": "whip to the diagram",
+   "sound": "riser then boom on the white"
+  },
+  {
+   "t": 40.19,
+   "title": "Light first",
+   "what": "diagram: light instant, wave travels 1 km per 3 s",
+   "bridge": "back to the platform",
+   "sound": "glock, a long whoosh, ticks per km"
+  },
+  {
+   "t": 48.36,
+   "title": "Count and dive",
+   "what": "9, 8 slam; he dives behind a pillar and covers his head",
+   "bridge": "the shake",
+   "sound": "two thunks, whoosh + impact on the landing"
+  },
+  {
+   "t": 53.41,
+   "title": "The shake",
+   "what": "station shakes, dust, cracks, lights die then red",
+   "bridge": "silence into the red",
+   "sound": "the loudest boom, debris, clicks"
+  },
+  {
+   "t": 60.48,
+   "title": "Alive",
+   "what": "he rises in red light, grim; end card LAST TRAIN Part 1",
+   "bridge": "end",
+   "sound": "heartbeats, final impact"
+  }
+ ]
+}

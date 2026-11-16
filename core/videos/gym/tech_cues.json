@@ -1,0 +1,113 @@
+[
+{
+"kind": "tick",
+"t": 1.58,
+"gain": 0.45
+},
+{
+"kind": "tick",
+"t": 3.88,
+"gain": 0.45
+},
+{
+"kind": "tick",
+"t": 8.58,
+"gain": 0.45
+},
+{
+"kind": "tick",
+"t": 11.28,
+"gain": 0.45
+},
+{
+"kind": "tick",
+"t": 13.38,
+"gain": 0.45
+},
+{
+"kind": "pop",
+"t": 0.1,
+"gain": 0.4
+},
+{
+"kind": "pop",
+"t": 1.45,
+"gain": 0.4
+},
+{
+"kind": "pop",
+"t": 3.0,
+"gain": 0.4
+},
+{
+"kind": "pop",
+"t": 5.45,
+"gain": 0.4
+},
+{
+"kind": "pop",
+"t": 6.8,
+"gain": 0.4
+},
+{
+"kind": "pop",
+"t": 8.95,
+"gain": 0.4
+},
+{
+"kind": "pop",
+"t": 10.5,
+"gain": 0.4
+},
+{
+"kind": "pop",
+"t": 13.8,
+"gain": 0.4
+},
+{
+"kind": "tap",
+"t": 10.7,
+"gain": 0.3
+},
+{
+"kind": "tap",
+"t": 11.0,
+"gain": 0.3
+},
+{
+"kind": "tap",
+"t": 11.3,
+"gain": 0.3
+},
+{
+"kind": "tap",
+"t": 11.6,
+"gain": 0.3
+},
+{
+"kind": "click",
+"t": 5.1,
+"gain": 0.55
+},
+{
+"kind": "click",
+"t": 8.6,
+"gain": 0.55
+},
+{
+"kind": "click",
+"t": 13.6,
+"gain": 0.55
+},
+{
+"kind": "whoosh",
+"t": 6.55,
+"gain": 0.35,
+"dur": 0.5
+},
+{
+"kind": "glock",
+"t": 13.85,
+"gain": 0.35
+}
+]

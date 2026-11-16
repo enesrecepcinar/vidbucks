@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """kit_timing.py - one timing file for the kits (BoardFilm, LayerScene, Swiss): lines + Whisper word times.
 
-  python tools/kit_timing.py --script script.txt --audio narration.wav --out videos/x/timing.json [--lang tr] [--lead 0.15] [--bpm 112]
+  python tools/kit_timing.py --script script.txt --audio narration.wav --out videos/x/timing.json [--lang tr] [--lead 0.15] [--bpm 112] [--forced]
   python tools/kit_timing.py --script script.txt --words words.json --audio narration.wav --out ...   # reuse vo_words.py output
 
 script.txt: one narration line per paragraph (blank line between) or one per line. Whisper's words are matched to the
@@ -15,7 +15,12 @@ ap = argparse.ArgumentParser()
 ap.add_argument("--script", required=True); ap.add_argument("--audio", required=True); ap.add_argument("--out", required=True)
 ap.add_argument("--words"); ap.add_argument("--lang", default="en"); ap.add_argument("--lead", type=float, default=0.0)
 ap.add_argument("--tail", type=float, default=1.0); ap.add_argument("--bpm", type=float); ap.add_argument("--model", default="small")
+ap.add_argument("--forced", action="store_true", help="forced alignment of the script (tools/align_script.py, stable-ts): exact script words, no guessing")
 a = ap.parse_args()
+if a.forced:
+    import sys
+    cmd = [sys.executable, str(pathlib.Path(__file__).with_name("align_script.py")), "--script", a.script, "--audio", a.audio, "--out", a.out, "--lang", a.lang, "--lead", str(a.lead), "--tail", str(a.tail), "--model", a.model]
+    raise SystemExit(subprocess.run(cmd).returncode)
 
 raw = pathlib.Path(a.script).read_text(encoding="utf-8")
 paras = [p.strip().replace("\n", " ") for p in re.split(r"\n\s*\n", raw) if p.strip()]

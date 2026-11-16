@@ -92,3 +92,7 @@ core/videos/shots-piri/**/*.png
 core/videos/shots-piri/**/*.wav
 core/videos/shots-piri/**/*.mp4
 core/videos/shots-piri/**/*.m4a
+
+# the user's own footage and edits (never committed)
+core/videos/edits/
+core/public/edits/

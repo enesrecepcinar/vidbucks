@@ -382,9 +382,11 @@
   "source": "lemo-opuscar (CC BY-NC 4.0 docs)",
   "style_doc": "third_party/lemo-opuscar/styles/colored-pencil/STYLE.md",
   "needs": [],
-  "renderer": null,
-  "preset": null,
-  "readiness": "build"
+  "renderer": "media",
+  "preset": {
+   "medium": "crosshatch"
+  },
+  "readiness": "skin"
  },
  {
   "id": "comic-history",
@@ -458,9 +460,11 @@
   "source": "lemo-opuscar (CC BY-NC 4.0 docs)",
   "style_doc": "third_party/lemo-opuscar/styles/crayon-book/STYLE.md",
   "needs": [],
-  "renderer": null,
-  "preset": null,
-  "readiness": "build"
+  "renderer": "media",
+  "preset": {
+   "medium": "cut-paper"
+  },
+  "readiness": "skin"
  },
  {
   "id": "crayon-world",
@@ -481,9 +485,11 @@
   "source": "lemo-opuscar (CC BY-NC 4.0 docs)",
   "style_doc": "third_party/lemo-opuscar/styles/crayon-world/STYLE.md",
   "needs": [],
-  "renderer": null,
-  "preset": null,
-  "readiness": "build"
+  "renderer": "media",
+  "preset": {
+   "medium": "cut-paper"
+  },
+  "readiness": "skin"
  },
  {
   "id": "dark-documentary",
@@ -1055,9 +1061,11 @@
   "source": "lemo-opuscar (CC BY-NC 4.0 docs)",
   "style_doc": "third_party/lemo-opuscar/styles/isometric-picture-book/STYLE.md",
   "needs": [],
-  "renderer": null,
-  "preset": null,
-  "readiness": "build"
+  "renderer": "media",
+  "preset": {
+   "medium": "isometric"
+  },
+  "readiness": "skin"
  },
  {
   "id": "kino-montage",
@@ -1258,9 +1266,11 @@
   "source": "lemo-opuscar (CC BY-NC 4.0 docs)",
   "style_doc": "third_party/lemo-opuscar/styles/microgame/STYLE.md",
   "needs": [],
-  "renderer": null,
-  "preset": null,
-  "readiness": "build"
+  "renderer": "media",
+  "preset": {
+   "medium": "pixel"
+  },
+  "readiness": "skin"
  },
  {
   "id": "microscope",
@@ -1510,9 +1520,11 @@
   "source": "lemo-opuscar (CC BY-NC 4.0 docs)",
   "style_doc": "third_party/lemo-opuscar/styles/paper-popup/STYLE.md",
   "needs": [],
-  "renderer": null,
-  "preset": null,
-  "readiness": "build"
+  "renderer": "media",
+  "preset": {
+   "medium": "cut-paper"
+  },
+  "readiness": "skin"
  },
  {
   "id": "papercut-red",
@@ -1638,9 +1650,11 @@
   "source": "lemo-opuscar (CC BY-NC 4.0 docs)",
   "style_doc": "third_party/lemo-opuscar/styles/pixel-rpg/STYLE.md",
   "needs": [],
-  "renderer": null,
-  "preset": null,
-  "readiness": "build"
+  "renderer": "media",
+  "preset": {
+   "medium": "pixel"
+  },
+  "readiness": "skin"
  },
  {
   "id": "pop-art",
@@ -1689,9 +1703,11 @@
   "source": "lemo-opuscar (CC BY-NC 4.0 docs)",
   "style_doc": "third_party/lemo-opuscar/styles/precise-mechanism/STYLE.md",
   "needs": [],
-  "renderer": null,
-  "preset": null,
-  "readiness": "build"
+  "renderer": "media",
+  "preset": {
+   "medium": "isometric"
+  },
+  "readiness": "skin"
  },
  {
   "id": "printed-long-take",
@@ -1713,9 +1729,11 @@
   "source": "lemo-opuscar (CC BY-NC 4.0 docs)",
   "style_doc": "third_party/lemo-opuscar/styles/printed-long-take/STYLE.md",
   "needs": [],
-  "renderer": null,
-  "preset": null,
-  "readiness": "build"
+  "renderer": "media",
+  "preset": {
+   "medium": "crosshatch"
+  },
+  "readiness": "skin"
  },
  {
   "id": "risograph",
@@ -2329,9 +2347,11 @@
   "source": "lemo-opuscar (CC BY-NC 4.0 docs)",
   "style_doc": "third_party/lemo-opuscar/styles/urban-sketch/STYLE.md",
   "needs": [],
-  "renderer": null,
-  "preset": null,
-  "readiness": "build"
+  "renderer": "media",
+  "preset": {
+   "medium": "crosshatch"
+  },
+  "readiness": "skin"
  },
  {
   "id": "vintage-collage",
@@ -2435,9 +2455,11 @@
   "source": "lemo-opuscar (CC BY-NC 4.0 docs)",
   "style_doc": "third_party/lemo-opuscar/styles/white-model/STYLE.md",
   "needs": [],
-  "renderer": null,
-  "preset": null,
-  "readiness": "build"
+  "renderer": "media",
+  "preset": {
+   "medium": "isometric"
+  },
+  "readiness": "skin"
  },
  {
   "id": "whiteboard",
@@ -2589,5 +2611,144 @@
   "renderer": null,
   "preset": null,
   "readiness": "config"
+ },
+ {
+  "id": "crosshatch-ink",
+  "name": "Crosshatch Ink (boiling line, hatched shading)",
+  "category": "Vidbucks media",
+  "family": "illustration",
+  "dark": false,
+  "suits": {
+   "story": 0.9,
+   "emotion": 0.7,
+   "process": 0.5,
+   "history": 0.5
+  },
+  "uses": [],
+  "source": "vidbucks",
+  "renderer": "media",
+  "preset": {
+   "medium": "crosshatch"
+  },
+  "readiness": "native"
+ },
+ {
+  "id": "sketchbook",
+  "name": "Sketchbook (pencil, ink, scribble colour)",
+  "category": "Vidbucks media",
+  "family": "illustration",
+  "dark": false,
+  "suits": {
+   "process": 0.9,
+   "science": 0.6,
+   "list": 0.6,
+   "story": 0.5
+  },
+  "uses": [],
+  "source": "vidbucks",
+  "renderer": "media",
+  "preset": {
+   "medium": "sketchbook"
+  },
+  "readiness": "native"
+ },
+ {
+  "id": "cut-paper",
+  "name": "Cut Paper Collage",
+  "category": "Vidbucks media",
+  "family": "illustration",
+  "dark": false,
+  "suits": {
+   "story": 0.9,
+   "humor": 0.7,
+   "emotion": 0.7,
+   "nature": 0.5
+  },
+  "uses": [],
+  "source": "vidbucks",
+  "renderer": "media",
+  "preset": {
+   "medium": "cut-paper"
+  },
+  "readiness": "native"
+ },
+ {
+  "id": "riso-print",
+  "name": "Riso Three-Ink Print",
+  "category": "Vidbucks media",
+  "family": "illustration",
+  "dark": false,
+  "suits": {
+   "title": 0.8,
+   "quote": 0.7,
+   "nature": 0.5,
+   "number": 0.5
+  },
+  "uses": [],
+  "source": "vidbucks",
+  "renderer": "media",
+  "preset": {
+   "medium": "riso"
+  },
+  "readiness": "native"
+ },
+ {
+  "id": "pixel-lowres",
+  "name": "Low-Res Pixel World",
+  "category": "Vidbucks media",
+  "family": "screen",
+  "dark": true,
+  "suits": {
+   "humor": 0.8,
+   "history": 0.5,
+   "list": 0.6,
+   "tech": 0.6
+  },
+  "uses": [],
+  "source": "vidbucks",
+  "renderer": "media",
+  "preset": {
+   "medium": "pixel"
+  },
+  "readiness": "native"
+ },
+ {
+  "id": "iso-hairline",
+  "name": "Isometric Hairline",
+  "category": "Vidbucks media",
+  "family": "illustration",
+  "dark": false,
+  "suits": {
+   "product": 1,
+   "tech": 0.9,
+   "process": 0.8
+  },
+  "uses": [],
+  "source": "vidbucks",
+  "renderer": "media",
+  "preset": {
+   "medium": "isometric"
+  },
+  "readiness": "native"
+ },
+ {
+  "id": "math-stage",
+  "name": "Math Stage (graphs that draw, live readouts)",
+  "category": "Vidbucks media",
+  "family": "screen",
+  "dark": true,
+  "suits": {
+   "science": 1,
+   "number": 0.9,
+   "data": 0.7,
+   "comparison": 0.5
+  },
+  "uses": [],
+  "source": "vidbucks",
+  "renderer": "media",
+  "preset": {
+   "medium": "math"
+  },
+  "readiness": "native"
  }
 ]

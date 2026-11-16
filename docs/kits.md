@@ -61,6 +61,47 @@ the beat with `PRESS`, entrances are clip-reveals (`ClipText`), deletions are kn
 are part of the layout (`Statement`: a grey lead-in and a bold sentence revealed on each word's spoken time).
 The one element allowed off the grid (the "exception") moves linearly and unsnapped.
 
+## Media (`src/kits/media/Media.tsx`, demo `MediaReel`, sheet `MediaGallery`)
+Seven drawing media as primitives (registry `renderer: "media"`: our 7 media `native`, 11 related styles `skin`).
+**Automatic scenes** (`MediaScene.tsx`, rendered by MultiStyle): `segment_draft.py` turns every SENTENCE of a segment into a
+beat (`{line, w: first word index, kind}`): a sentence with a number -> `number` (counted up; years and clock times stamp,
+"11" ".52" from Whisper joins to "11:52"); a sentence with a known word -> `object` with one of 40 icons from `ICONS` (people and
+things, places and transport: train, tunnel, door, phone, city, car, ship, plane; nature: tree, mountain, wave, flame, cloud,
+moon, bolt; ideas: key, lock, gear, shield, crown, eye, burst ...; English + Turkish stems in `ICON_LEX`, specific before
+generic; the same icon never twice in a row; sheet: composition `MediaIconSheet`) labelled with the word that chose it; nothing honest to draw -> `title` (the sentence if <= 5 words, else its 3
+content words). Two more beat kinds: `compare` (two things in one sentence with "but / than / instead / ama / yerine" -> vs, or "became /
+turned into / dönüştü" -> an arrow; the second figure lands on its own word) and `list` (3+ short items split by commas and a
+final and/ve: each row lands on its word, the lead-in keeps its last word, the list ends at the item after the conjunction).
+Single objects alternate centre / left / right; a year beside another number makes the number the hero ("4,500 · 1900"), and a
+thousands group Whisper split ("4" ",500") is joined. The first beat of a segment starts 0.2 s before frame 0, so a film (or an
+iris) opens on a drawing being finished, never blank paper. The camera pushes 7 % and drifts per beat (direction alternates).
+**Sound:** `tools/media_cues.py --edit edit.json --timing timing.json --out cues.json` -> `sfx_synth.py` -> `mix_film.py`:
+one hit per beat in the medium's voice (pencil / paper / plate slide / chime / snap / tick), ticks + thunk for a counted
+number, a stamp for a year, whoosh or impact for a comparison, a tap per list row, whoosh at a change of medium.
+Each medium draws the same beat its own way and keeps idle motion; captions sit bottom-anchored in title-safe,
+unspoken words at 72 % (lower fails the 3:1 contrast gate). Edit icons/labels in edit.json; add an icon to ICONS + ICON_LEX.
+Primitives:
+- **crosshatch**: `Ink` (a hand line that boils on 2s: re-wobbled every 2 frames, two passes, `frac` writes it on), `Hatch`
+  (parallel wobbly lines clipped in a shape, a density function puts ink on the shadow side, `cross` adds the darks), `Shape`
+  (colour a few px off the line + hatch + outline), `Paper` (grain, vignette, optional dot grid). Rule: no flat fills, the line never stands still.
+- **sketchbook**: graphite construction (`Ink` light grey, no double) -> inked over -> a one-colour scribble fill that writes on, one highlighted word.
+- **cut-paper**: `tear()` + `Cut` (torn edge, soft shadow, crayon grain) and `PaperDefs` patterns (stripes, dots, gingham, wood);
+  a full-bleed wall, a character with a face that pops (`pop`) and blinks, hand-lettered tags, never an object floating on blank paper.
+- **riso**: `RisoPrint` prints shapes as three spot-ink plates (teal 15°, pink 75°, yellow 45° halftone screens, 10 tone levels),
+  multiplied, the non-key plates a few px off register, worn by a noise mask. Colours are tones per ink: green = teal + yellow,
+  violet = teal + pink, never black. Type is a knockout (paper colour) on a solid plate.
+- **pixel**: `PixelCanvas` draws at a low resolution (192x108 = 10 px squares at 1080p; pick a divisor of the frame), snaps every
+  pixel to a 16-colour palette, scales up nearest-neighbour; `ditherBand` for skies (4x4 ordered dither). Sprites are strings.
+- **isometric**: `iso()` 2:1 dimetric projection and `IsoBox` (white faces hide what is behind, `#a4a4ac` hairlines, inner lines
+  lighter, ONE dark accent per frame); exploded views and stacks that drop in.
+- **math**: near-black stage, axes and curves that sweep on, a tracking dot with a live decimal readout, one colour per quantity
+  everywhere (formula, figure, readout), `morph()` blends two outlines resampled by angle. Only for true maths.
+Bridges: `Iris` (the old world closes into a window shaped like an object - circle, torn, star - blank paper, the new world
+opens from it; the new scene starts half-drawn so the window shows a world), `Beam` (a coloured bar wipes, the next scene
+behind its trailing edge). A beat-cut piece cuts hard; a morph-joined piece keeps at most one hard cut (the payoff).
+Registry styles drawn in the nearest medium: colored-pencil, urban-sketch, printed-long-take (crosshatch); crayon-book,
+crayon-world, paper-popup (cut-paper); pixel-rpg, microgame (pixel); isometric-picture-book, precise-mechanism, white-model (isometric).
+
 ## Mixing kits
 ```tsx
 <Series>

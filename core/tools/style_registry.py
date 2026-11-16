@@ -4,7 +4,7 @@
   python tools/style_registry.py            # rebuild from third_party/lemo-opuscar/styles + Vidbucks kits/templates
 
 Each entry: id, name, family (look family, for transitions/contrast), category, suits {tag: weight}, tone, dark (bool),
-renderer (board | type | layers | swiss-dance | null), preset (look/preset for the renderer), readiness:
+renderer (board | type | layers | swiss-dance | media | null), preset (look/preset for the renderer), readiness:
   native = drawn by its own kit/preset · skin = drawn by a related kit in this style's palette/type/texture (approximation,
   flagged in the edit) · author = needs agent-authored art (LayerScene) · build = no kit yet (the style-library skill builds one)
 Content tags (what style_director.py detects in the script): number year money percent place map process list comparison
@@ -64,6 +64,11 @@ BOARD = {"archive-lighttable": ("wall", "bw", "native"), "briefing-board": ("stu
 LAYERS = {"stick-explainer": "grid", "one-line": "grid", "sketchnote": "paper", "marker-paper": "grid", "ipad-sketch": "grid", "instruction-manual": "grid",
           "iso-infographic": "grid", "assembly-line-diagram": "grid", "pen-plotter": "paper", "shadow-puppet": "paper", "papercut-red": "paper",
           "silhouette-rhythm": "tv", "midcentury-toon": "paper", "rubber-hose": "grid"}
+# drawing media (src/kits/media/Media.tsx): primitives the agent composes a scene from (ink boil, hatching, torn paper,
+# riso plates, pixel canvas, isometric hairline, math stage) -> these registry styles are drawn in the nearest medium
+MEDIA = {"colored-pencil": "crosshatch", "urban-sketch": "crosshatch", "printed-long-take": "crosshatch", "crayon-book": "cut-paper", "paper-popup": "cut-paper",
+         "crayon-world": "cut-paper", "pixel-rpg": "pixel", "microgame": "pixel", "isometric-picture-book": "isometric", "precise-mechanism": "isometric",
+         "white-model": "isometric"}
 DARK = {"spy-titles", "ascii-crt", "one-bit-dither", "silent-film", "newsreel", "caption-news", "news-package", "dark-keynote", "hologram-hud", "circuit-board",
         "neon-tubes", "oscilloscope-math", "chalkboard", "blueprint", "text-flash-cuts", "flat-space-explainer", "art-deco", "archive-lighttable",
         "visual-investigation", "dark-documentary", "satellite-briefing", "backrooms", "scratch-film", "double-exposure", "thermal-camera", "security-xray",
@@ -85,6 +90,7 @@ for d in sorted(LEMO.iterdir()):
     if slug in BOARD: lk, gr, rd = BOARD[slug]; e.update(renderer="board", preset={"look": lk, "grade": gr}, readiness=rd)
     elif slug in TYPE_PRESETS: e.update(renderer="type", preset=slug, readiness="native" if slug in NATIVE_TYPE else "skin")
     elif slug in LAYERS: e.update(renderer="layers", preset={"look": LAYERS[slug]}, readiness="author")
+    elif slug in MEDIA: e.update(renderer="media", preset={"medium": MEDIA[slug]}, readiness="skin")
     else: e.update(renderer=None, preset=None, readiness="build")
     out.append(e)
 # Vidbucks' own templates (configs the agent fills; not yet MultiStyle renderers)
@@ -96,6 +102,18 @@ for tid, name, suits, dark in [("kinetic-type", "Kinetic Typography (Tpl-Kinetic
                                ("geomap-europe", "GeoMap documentary (Europe)", {"place": 1, "map": 1, "history": .8}, False)]:
     out.append({"id": tid, "name": name, "category": "Vidbucks templates", "family": "vidbucks", "dark": dark, "suits": suits, "uses": [],
                 "source": "vidbucks", "renderer": None, "preset": None, "readiness": "config"})
+MEDIUM_OF = {"crosshatch-ink": "crosshatch", "sketchbook": "sketchbook", "cut-paper": "cut-paper", "riso-print": "riso", "pixel-lowres": "pixel", "iso-hairline": "isometric", "math-stage": "math"}
+# the media themselves, as styles of their own (author: the agent composes each scene from the primitives)
+for mid, name, suits, dark in [("crosshatch-ink", "Crosshatch Ink (boiling line, hatched shading)", {"story": .9, "emotion": .7, "process": .5, "history": .5}, False),
+                               ("sketchbook", "Sketchbook (pencil, ink, scribble colour)", {"process": .9, "science": .6, "list": .6, "story": .5}, False),
+                               ("cut-paper", "Cut Paper Collage", {"story": .9, "humor": .7, "emotion": .7, "nature": .5}, False),
+                               ("riso-print", "Riso Three-Ink Print", {"title": .8, "quote": .7, "nature": .5, "number": .5}, False),
+                               ("pixel-lowres", "Low-Res Pixel World", {"humor": .8, "history": .5, "list": .6, "tech": .6}, True),
+                               ("iso-hairline", "Isometric Hairline", {"product": 1, "tech": .9, "process": .8}, False),
+                               ("math-stage", "Math Stage (graphs that draw, live readouts)", {"science": 1, "number": .9, "data": .7, "comparison": .5}, True)]:
+    out.append({"id": mid, "name": name, "category": "Vidbucks media", "family": "illustration" if not dark else "screen", "dark": dark, "suits": suits, "uses": [],
+                "source": "vidbucks", "renderer": "media", "preset": {"medium": MEDIUM_OF[mid]},
+                "readiness": "native"})
 dst = ROOT / "styles" / "registry.json"; dst.parent.mkdir(exist_ok=True)
 dst.write_text(json.dumps(out, ensure_ascii=False, indent=1))
 from collections import Counter

@@ -1,0 +1,103 @@
+[
+{
+"kind": "impact",
+"t": 0.83,
+"gain": 0.75
+},
+{
+"kind": "snap",
+"t": 0.83,
+"gain": 0.45
+},
+{
+"kind": "impact",
+"t": 2.73,
+"gain": 0.75
+},
+{
+"kind": "snap",
+"t": 2.73,
+"gain": 0.45
+},
+{
+"kind": "impact",
+"t": 5.03,
+"gain": 0.75
+},
+{
+"kind": "snap",
+"t": 5.03,
+"gain": 0.45
+},
+{
+"kind": "impact",
+"t": 7.21,
+"gain": 0.75
+},
+{
+"kind": "snap",
+"t": 7.21,
+"gain": 0.45
+},
+{
+"kind": "impact",
+"t": 9.91,
+"gain": 0.75
+},
+{
+"kind": "snap",
+"t": 9.91,
+"gain": 0.45
+},
+{
+"kind": "whoosh",
+"t": 1.67,
+"gain": 0.45,
+"dur": 0.4
+},
+{
+"kind": "whoosh",
+"t": 3.67,
+"gain": 0.45,
+"dur": 0.4
+},
+{
+"kind": "whoosh",
+"t": 6.05,
+"gain": 0.45,
+"dur": 0.4
+},
+{
+"kind": "whoosh",
+"t": 8.05,
+"gain": 0.45,
+"dur": 0.4
+},
+{
+"kind": "riser",
+"t": 3.45,
+"gain": 0.4,
+"dur": 0.8
+},
+{
+"kind": "riser",
+"t": 8.13,
+"gain": 0.35,
+"dur": 0.6
+},
+{
+"kind": "boom",
+"t": 10.33,
+"gain": 0.9
+},
+{
+"kind": "stamp",
+"t": 10.45,
+"gain": 0.6
+},
+{
+"kind": "pop",
+"t": 10.71,
+"gain": 0.45
+}
+]
