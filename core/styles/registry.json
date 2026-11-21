@@ -2846,5 +2846,31 @@
   "renderer": null,
   "preset": null,
   "readiness": "config"
+ },
+ {
+  "id": "archive-doc",
+  "name": "Archive Doc (ArchiveDoc kit: dark archival documentary with real public-domain photos)",
+  "category": "Vidbucks templates",
+  "family": "vidbucks",
+  "dark": true,
+  "suits": {
+   "place": 0.9,
+   "story": 0.85,
+   "number": 0.7,
+   "quote": 0.8,
+   "map": 0.7,
+   "comparison": 0.7,
+   "title": 0.6,
+   "data": 0.5
+  },
+  "uses": [
+   "Military history and places ('what is still there')",
+   "Disasters, expeditions, companies and true crime with archive photos",
+   "Then-and-now stories with maps, records and memos"
+  ],
+  "source": "vidbucks",
+  "renderer": null,
+  "preset": null,
+  "readiness": "config"
  }
 ]

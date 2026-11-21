@@ -39,6 +39,7 @@ import { ClipVlog } from "../kits/vlog/ClipVlog";
 import { AdSpot, DEMO_AD, AD_LEN } from "../kits/ad/AdSpot";
 import { LogoReveal, DEMO_LOGO } from "../kits/logo/LogoReveal";
 import { StormWorld, DEMO_STORM, stormLength } from "../kits/storm/StormWorld";
+import { ArchiveDoc, DEMO_ARCHIVE, archiveLength } from "../kits/archive/ArchiveDoc";
 import { Whiteboard, DEMO_WB, boardLength } from "../kits/media/Whiteboard";
 import { DataRace, DEMO_RACE, raceLength } from "../kits/data/DataRace";
 import { Countdown, DEMO_COUNT, countLength } from "../kits/list/Countdown";
@@ -71,6 +72,7 @@ export const TemplateCompositions: React.FC = () => (
     <Composition id="MorphDemo" component={MorphDemo} width={1920} height={1080} fps={30} durationInFrames={150} />
     <Composition id="Whiteboard" component={Whiteboard as React.FC<any>} width={1920} height={1080} fps={30} durationInFrames={Math.round(boardLength(DEMO_WB) * 30)} defaultProps={{ cfg: DEMO_WB }} calculateMetadata={({ props }: { props: any }) => ({ durationInFrames: Math.round(boardLength(props.cfg) * 30) })} />
     <Composition id="AdSpot" component={AdSpot as React.FC<any>} width={1080} height={1920} fps={30} durationInFrames={AD_LEN * 30} defaultProps={DEMO_AD} calculateMetadata={({ props }: { props: any }) => (props.size ? { width: props.size[0], height: props.size[1] } : {})} />
+    <Composition id="ArchiveDoc" component={ArchiveDoc as React.FC<any>} width={1920} height={1080} fps={30} durationInFrames={Math.round(archiveLength(DEMO_ARCHIVE) * 30)} defaultProps={{ cfg: DEMO_ARCHIVE }} calculateMetadata={({ props }: { props: any }) => ({ durationInFrames: Math.round(archiveLength(props.cfg) * 30), ...(props.size ? { width: props.size[0], height: props.size[1] } : {}) })} />
     <Composition id="StormWorld" component={StormWorld as React.FC<any>} width={1920} height={1080} fps={30} durationInFrames={Math.round(stormLength(DEMO_STORM) * 30)} defaultProps={{ cfg: DEMO_STORM }} calculateMetadata={({ props }: { props: any }) => ({ durationInFrames: Math.round(stormLength(props.cfg) * 30), ...(props.size ? { width: props.size[0], height: props.size[1] } : {}) })} />
     <Composition id="LogoReveal" component={LogoReveal as React.FC<any>} width={1920} height={1080} fps={30} durationInFrames={135} defaultProps={{ logo: DEMO_LOGO }} calculateMetadata={({ props }: { props: any }) => ({ durationInFrames: Math.round((props.duration ?? 4.5) * 30), ...(props.size ? { width: props.size[0], height: props.size[1] } : {}) })} />
     <Composition id="ClipVlog" component={ClipVlog as React.FC<any>} width={1080} height={1920} fps={30} durationInFrames={300} defaultProps={{ cfg: { segments: [], captions: [], duration: 10 } }} calculateMetadata={({ props }: { props: any }) => ({ durationInFrames: Math.round(props.cfg.duration * 30) })} />

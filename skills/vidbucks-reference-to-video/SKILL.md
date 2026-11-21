@@ -44,6 +44,7 @@ Goal: the reference's STYLE and QUALITY level, with the user's own content. The 
 | character / hand-drawn animation | engine characters (`Doomer`, `Face2`, `Meme` in `src/engine`) or sourced art; state the limits |
 | maps / documentary | `GeoMap` kit with Natural Earth data (`tools/geo_export.py`) |
 | 2D animated paper-landscape documentary (weather, natural disasters, nature, earth science, places) with an observer, field notebook and inserts | kit **StormWorld** + `tools/storm_build.py storm.json --timing timing.json --out props.json --cues cues.json` (shots start on narration lines; 10 funnel shapes, 9 events, 8 lands, 7 skies, 12 insert kinds, 5 transitions; 16:9 and 9:16) |
+| dark archival documentary (public-domain photos/footage, framed prints, serif chapter cards, date tags, memos, record tables, maps with routes) | kit **ArchiveDoc** + `tools/archive_build.py archive.json --timing timing.json --out props.json --cues cues.json` (media from `fetch-stock.mjs --source wikimedia`, maps from `board_map.py`) |
 | historical / character POV vlog made with an AI video model (Flow, Veo, Omni) | skill **vidbucks-historical-pov** |
 | filmed real-world, talking head, vlog, phone-filmed screen | real licensed footage, the user's own footage if the output must contain it, or an honest mock-up; expect a lower score |
 | music-only loop / meme / caption template | replicate the structure and caption format with own text; seamless loop where the reference loops |

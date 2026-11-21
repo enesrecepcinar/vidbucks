@@ -13,6 +13,8 @@ pencil caption, notebook paper and pencil, annotation pops, counter ticks, thund
 funnel, quake rumble, volcano and meteor booms, wave whoosh, scale blips, waffle ticks, newspaper slam, map marker, TV static).
 Then: python tools/sfx_synth.py --cues cues.json --duration <s> --out sfx.wav, and mix_film.py for voice + music + sfx."""
 import argparse, json, pathlib, sys
+sys.path.insert(0, str(pathlib.Path(__file__).parent))
+from shot_timing import fit_shots
 
 ap = argparse.ArgumentParser()
 ap.add_argument("plan"); ap.add_argument("--timing"); ap.add_argument("--out", required=True); ap.add_argument("--cues")
@@ -22,35 +24,7 @@ a = ap.parse_args()
 plan = json.loads(pathlib.Path(a.plan).read_text())
 shots = plan["shots"]
 
-if a.timing:
-    tm = json.loads(pathlib.Path(a.timing).read_text())
-    start = {ln["id"]: ln["start"] for ln in tm["lines"]}
-    total = tm["duration"]
-    prev = 0.0
-    for i, s in enumerate(shots):
-        if i > 0 and "line" in s:
-            if s["line"] not in start: sys.exit(f"shot {i}: line {s['line']} is not in the timing")
-            if start[s["line"]] < prev - 1e-6: sys.exit(f"shot {i}: line {s['line']} starts before an earlier shot's line")
-            prev = start[s["line"]]
-        elif i > 0 and "dur" not in s: sys.exit(f"shot {i}: give it a `line` or a `dur`")
-    # durations: next start - this start; shots without a line keep their dur and push the next start
-    t = 0.0
-    for i, s in enumerate(shots):
-        nxt = None
-        for j in range(i + 1, len(shots)):
-            if "line" in shots[j]: nxt = start[shots[j]["line"]]; break
-        # fixed-length shots sitting between this one and the next lined shot
-        fixed = 0.0
-        for k in range(i + 1, len(shots)):
-            if "line" in shots[k]: break
-            fixed += shots[k]["dur"]
-        end = (nxt if nxt is not None else total) - fixed
-        if "line" in s or i == 0: s["dur"] = round(max(0.0, end - t), 3)
-        if s["dur"] < 1.2: sys.exit(f"shot {i} ({s['kind']}) is only {s['dur']:.2f}s long: merge it or move its line")
-        t += s["dur"]
-for s in shots:
-    s.pop("line", None)
-    if "dur" not in s: sys.exit(f"a {s['kind']} shot has no dur")
+fit_shots(shots, a.timing)
 
 cfg = {k: v for k, v in plan.items() if k != "shots"}
 cfg["shots"] = shots
