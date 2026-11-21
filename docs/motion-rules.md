@@ -41,4 +41,22 @@
 30. **Colour moves through OKLCH** (`mixOklch(a, b, k)`), never raw sRGB: blue -> orange in sRGB passes through grey.
 31. **Speed ramps for impacts** (`speedRamp(t, hit)`): feed the warped time to the scene's animations; the helper slows to
     25 % into the hit and pays the time back right after, so the picture is in sync with the sound again ~1 s later.
+32. **Promos and sizzle reels cut fast** (user note, 2026-11-17: "too slow, more motion, different sfx, real footage"):
+    cut on halves and quarters of the beat (median shot <= 0.5 s), a camera pulse on every beat, whips with motion blur,
+    glitch / chromatic hits on the big moments, colour changes per word, and REAL renders from our own films (clips cut
+    from `core/out/films`, never stock). Targets: still share < 0.45 under `quality_gate --profile motion`, >= 60 cuts/min,
+    one distinct sound per kind of event (>= 15 kinds in 30 s). A design-only build reads as a slide show, however clean.
+33. **Joins blend and never repeat** (user note, 2026-11-17: "do not stick to one thing, use different transition styles,
+    smooth and fluid"): shots overlap by 0.2-0.6 s through `src/kits/transitions.tsx` (`TransitionStage`: push, whip,
+    zoom-through, flip, spin, stack, iris, diagonal, wave, blob, tiles, bars, glitch, flash, luma, split) and neighbouring
+    joins use different kinds; motion keeps one direction through a join; mount every shot early (a `LEAD`) so it can be
+    half-way in; the sound of a join follows its language (whip -> whip, flip -> flip, blob -> morph, glitch -> static).
+34. **A showcase edit becomes what it shows** (user note, 2026-11-17: "only the sfx changed; the edit itself must change
+    shape with what Vidbucks can do, smooth, glass if needed, show things beyond what you learned"): each chapter turns
+    INTO the capability (the frame tears into cut paper, tilts into isometric, a chat bubble grows into a bar race, the
+    leader bar becomes a #1, a whiteboard ticks it off) and the joins are made of that capability, not picked from a list.
+    Changing only transitions or sounds over the same skeleton is not a new edit. Glass look: real `backdrop-filter`
+    over a moving mesh, a bright rim, an inner top highlight; SVG displacement + specular light for liquid glass.
+    Note: a smooth, morph-driven edit reads ~0.6 "still" to `quality_gate --profile motion` (slow glides at 64x36);
+    judge it on the review sheets, not on rule 32's cut-rate targets, which are for fast sizzle cuts.
 

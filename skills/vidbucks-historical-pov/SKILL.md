@@ -47,6 +47,11 @@ The format: a historical figure records a vlog of one ordinary-but-revealing day
 - One clip at a time, about 30-60 s apart. **Stop at the first "Olağan dışı etkinlikler tespit ettik"** (it names page-modifying browser extensions): no retry; disable extensions that inject into flow.google.com (Erasio, "Veo" download buttons, automation helpers), never run page JavaScript in the Flow tab, wait ~45 min. A "tanınmış kişiler" refusal is refunded: rewrite without the name.
 - Driving Flow for the user: Claude in Chrome clicks (no script injection); the user's Chrome window must stay visible on the current Space (a hidden window stops painting and menus never open).
 
+Alternative engine: **Dreamina Seedance (2.0 Fast / 2.5)** in the Dreamina canvas or CapCut "multi reference", with
+image references bound by `@Image N`, one master voice file as an audio reference and dialogue lip-synced on camera.
+Prompt blocks SETUP / TIMELINE / DIALOGUE / LOCK, settings, credits seen and the open questions:
+`knowledge/ai-video/dreamina-seedance-workflow.md`. The user's own account and credits; no run without their yes.
+
 ## 6. Edit and gates
 1. Order clips; hard cuts; the 16 s extended files stay whole. Burned text: `ffmpeg delogo` on the OCR box (`quality_gate` gives time and box). Concatenate with the **concat filter** using video-stream durations (never container durations: a 0.013 s audio overhang per clip dropped the picture after 2 clips in two of our videos).
 2. Upscale to 1280x720 (lanczos) for 16:9 delivery, loudnorm -16 LUFS / TP -1.5 + limiter.

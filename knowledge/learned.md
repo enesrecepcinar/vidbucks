@@ -295,3 +295,72 @@ No downloading other channels' videos, no Google Images scraping, only CC0/CC BY
   styles). Lessons: the countdown's list title was overwritten by the last entry's title (one variable name for both) -
   check the drafted edit.json, not only the render; a title card that holds 2.4 s on a dark ground read as "black / frozen"
   to the gate, so it now has a drifting light and a push; a spoken "Number three:" duplicates the rank on screen.
+
+- 2026-11-16 · Dreamina / Seedance workflow learned from a user's screen recording -> `knowledge/ai-video/dreamina-seedance-workflow.md`
+  (shot table + fact-check block in a chat, named references incl. one master voice file, prompts in SETUP / TIMELINE /
+  DIALOGUE / LOCK blocks with @Image bindings, Dreamina canvas or CapCut "multi reference", 480p drafts to save credits).
+  Not run by us yet: the open questions are listed in that file.
+
+- 2026-11-16 · First Dreamina demo on the free plan (`exports/relativity-vlog-demo.mp4`): keyframes with Seedream 5.0 Flash,
+  silent clips with Seedance 1.0 Fast from those keyframes, voice/captions/cards/sound in the new `ClipVlog` kit; 416
+  credits. Lessons: on this plan the talking models (Seedance 2.x) and Seedream 5.5 are subscribers-only even when the menu
+  does not say so - hover the send button with a filled prompt to read the lock before pressing; never press anything on
+  the plans page; "phone" in a selfie prompt summons a smartphone into the shot; a reference that looks like a famous person
+  is refused - use an original character the platform approves and never name the person.
+
+- 2026-11-17 · Vidbucks 30 s promo (`src/kits/promo/VidbucksPromo.tsx`): six motion-design scenes on a 120 BPM grid built from
+  the package's own kits (live kits inside bento tiles are rendered full size and scaled, each from a busy moment of its own
+  timeline via a negative Sequence offset), 42 synthesised SFX cues, both aspects pass the gates. User note: for short
+  promos build the Remotion design directly, no story table first. Lessons: 8 heavy letters at 190 px overflow 9:16 (size
+  type for the narrow side); miniature kit previews inside tiles fail OCR contrast by design (exclude that span with
+  `--ignore-span` and say so); the AAC encode pushed a 0.85 limiter to 0.0 dBTP, 0.78 keeps it under -1 dB.
+
+- 2026-11-17 · Promo v2 (`VidbucksPromo2`): the user found v1 "too slow". v2 cuts on halves/quarters (78-100 cuts/min vs 28),
+  pulses the camera on every beat, whips with blur, glitch-slices the wordmark, swaps a colour block per word, ramps a zoom
+  with `speedRamp`, and shows 14 real renders + three 9:16 phones from our own films. Still share fell from 0.77 to 0.30.
+  Sound: 75 cues of 25 kinds (six new synth kinds: glitch, subdrop, zap, reverse, whip, tapestop) and a music drop before
+  the logo. Rule 32 in motion-rules.md. Text over a busy clip needs its own band (the clip's own words showed through).
+
+- 2026-11-17 - Real sound packs instead of synth-only effects. From the user's SFX repo list, only repositories whose
+  audio licence is stated in the repo itself were installed: three CC0 packs (320 + 936 + 68 sounds). Packs with
+  game-ripped audio or no licence file were skipped. `tools/sfx_packs.py` fetches only the audio folders (sparse git,
+  nothing executed), stores lossless FLAC where the pack ships WAV (mp3 encoder delay would move sync points), and indexes
+  each sound with its sync point: the pack's own value when it has one, otherwise the attack (first sample within 10 dB of
+  the peak; the -30 dB onset put a slow braam 0.3 s late). `sfx_synth.py` now plays a sample per cue kind (hit on `t`,
+  riser arriving at `t + dur`, continuous sounds tiled to `dur`), rotates takes, and falls back to synthesis; a 12 s
+  heartbeat bed must not answer a 0.6 s `heartbeat` cue (mapped to `tension` instead). Measured: single hits land within
+  7 ms of the cue. The relativity demo with real samples passes the gate (`exports/relativity-vlog-demo-realsfx.mp4`).
+
+- 2026-11-17 · Promo v3 (`VidbucksPromo3`) + `src/kits/transitions.tsx`: 16 blended transition kinds; every shot mounted
+  0.5 s early so joins overlap; 7 scene joins, 6 type-block joins and 15 reel joins, no neighbours alike; the hook is one
+  continuous dolly across 8 cuts (the zoom never resets). Sound from the CC0 packs: 75 of 76 cues real samples, 38 kinds,
+  each join's sound matching its picture. Still share 0.27 (v1 0.77, v2 0.30), 50 shots. Lessons: a Sequence does not
+  render before its `from`, so a shot that must be half-way in during a join needs a LEAD offset and local time t - LEAD;
+  re-check every cut clip for faces (an archive "traffic" cut opened on a worker's face; recut at the traffic shot); OCR
+  can merge a label with the line under it into a false OVERLAP on a single frame - look at the frame before acting.
+
+- 2026-11-17 · Promo v4 (`VidbucksPromo4`, 36 s): the user said v3 only changed sounds. v4 rebuilds the edit around the
+  capabilities: a frosted-glass studio measures a film and splits it into its shots; one scene re-born in six media, each
+  entered through its own medium (ink wipe, torn edge, riso plates, pixel grid, iso lift, scan line); a glass editor cuts
+  filler words, ripples the timeline, reframes 16:9 -> 9:16 on the speaker, pops captions, inserts B-roll; a chat bubble
+  grows into the data race, the leader bar becomes the #1 countdown, a whiteboard hand ticks it; glass gauges; a liquid-glass
+  logo (SVG turbulence displacement + specular lighting). Sound: 72 cues, 71 real CC0 samples, the uisfx "glass" theme.
+  Lessons: Remotion fills missing props from defaults, so kit demos inside a promo need explicit captions={false};
+  backdrop-filter doubles render time (40 min for 2 x 36 s); a camera glide that scales the frame pushes edge text out (keep
+  titles >= 5 % from the edge or scale <= 1.02); smooth morph edits read ~0.6 still to the gate (rule 34).
+
+## 2026-11-18 · NSA outage news film (English VO, Chatterbox)
+- What: `make_narration.py` (chatterbox) scored takes with a Turkish-only number speller, so an English take whose Whisper text had digits ("17th") scored low and burned retries. How now: for `--cb-lang` other than `tr`, digits are spelled with num2words in that language.
+- What: the full 73-paragraph Chatterbox run was killed (exit 137) after a few paragraphs while other work ran. How now: run it in a restart loop; takes are cached per paragraph, so a restart resumes. Expect ~1 paragraph/min on Apple Silicon.
+- What: `analyze_reference.py --link` crashed in channel context (numpy percentile -> broken numpy.ma import in yt-venv). How now: `--no-channel` works; the venv numpy needs repairing (follow-up).
+- What: Wikimedia Commons video files (upload host) returned HTTP 429 to our generic user agent; images through fetch-stock worked. How now: without Pexels/Pixabay keys a news film is photos + motion graphics; ask for the free keys early when the brief wants real footage. Never spoof a browser user agent.
+- What: long-form news route had no kit. How now: `src/kits/news/NewsFilm.tsx` (photo/video shots with camera moves, chapter, headline, quote, stat counter, timeline, grid, map, network, causes, known/unknown board, compare) driven by a per-video `build_shots.py` (paragraph -> shots, sentence-boundary splits, auto punch-in for photos held > 8 s) and `make_cues.py` (join sound by transition kind, hits per infographic).
+- What: a stock photo's on-screen tag claimed more than the photo shows (a 1950s Fort Meade print tagged "2000", a 1987 Berlin control room tagged as the FAA network). How now: news films mark every stock picture "File photo" in its credit line, tags never date or place a picture beyond its Commons title, and the credits list is read against the tags before the full render.
+- What (user note, 2026-11-18): the first NSA cut was "fine but not enough": a news video needs the researched sources on screen (article screenshots, posts on X, related footage), transitions and an edit that changes with the story, a news-channel feel, and nothing repeating without a reason. How now: NewsFilm has `article` (real cropped capture via `videos/nsa-kesinti/cdp_shot.mjs`, the spoken sentence highlighted on the page from DOM rects, page dims around it), `xpost` (recreated card, text verified via publish.twitter.com oEmbed, links removed, public accounts only), `archive` (4:3 film frame, sepia, flicker; public-domain US government film from archive.org `gov.archives.arc.*`), `wall` (headline mosaic), `split` (old/new), `breaking` stinger and a persistent `LATEST` ticker; `build_shots.py` gives each chapter its own transition set and tint and prints every asset used more than once. Archive.org "public domain" labels are uploader claims: trust only government items.
+
+## 2026-11-21 - StormWorld kit (youSeeWhy reference)
+- What: a 2D animated weather-documentary channel (paper-landscape skies, scalloped cloud ceiling, procedural tornado shapes, observer seen from behind, place pins, field notebook) had no matching kit.
+- Now: kit `StormWorld` (scene / notebook / card / number shots) with 10 procedural funnel shapes; style spec in `knowledge/references/youseewhy/STYLE.md`; registry id `storm-world`.
+- Link-only references: the YouTube storyboard spec (`ytInitialPlayerResponse.storyboards`) gives every 5 s of the video as sheets to VIEW in the Browser pane; full-size frames come from pausing the player and seeking. Scroll to the top before each frame grab.
+- StormWorld logic rules (2026-11-21 review): a tornado is drawn BEHIND the skyline and set pieces (it is far away), a notebook slot the hand writes into shows no printed label, a map route draws on with its band (never visible ahead of it), annotation dots sit on the computed funnel position, a counter of buildings needs buildings in the shot, two observers never overlap, the closing card never repeats the previous title, labels stay inside the 4.5 % safe margin and white labels over a funnel carry a shadow.
+- 2026-11-21: StormWorld generalised beyond tornadoes (9 events, 8 lands, 7 skies, worlds inside inserts, 9:16 via a landscape box for inserts) and wired to narration with `tools/storm_build.py` (shots start on timing lines, cues for every picture event). A kit built from one reference must take any topic in that format: the format is the asset, the reference topic is only the first instance.

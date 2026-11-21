@@ -43,6 +43,7 @@ Goal: the reference's STYLE and QUALITY level, with the user's own content. The 
 | stickman / doodle explainer, long-form | long-form route in CLAUDE.md section 5 (`vidbucks-script` -> `vidbucks-longform-build`, `vidbucks-stickman-engine`) |
 | character / hand-drawn animation | engine characters (`Doomer`, `Face2`, `Meme` in `src/engine`) or sourced art; state the limits |
 | maps / documentary | `GeoMap` kit with Natural Earth data (`tools/geo_export.py`) |
+| 2D animated paper-landscape documentary (weather, natural disasters, nature, earth science, places) with an observer, field notebook and inserts | kit **StormWorld** + `tools/storm_build.py storm.json --timing timing.json --out props.json --cues cues.json` (shots start on narration lines; 10 funnel shapes, 9 events, 8 lands, 7 skies, 12 insert kinds, 5 transitions; 16:9 and 9:16) |
 | historical / character POV vlog made with an AI video model (Flow, Veo, Omni) | skill **vidbucks-historical-pov** |
 | filmed real-world, talking head, vlog, phone-filmed screen | real licensed footage, the user's own footage if the output must contain it, or an honest mock-up; expect a lower score |
 | music-only loop / meme / caption template | replicate the structure and caption format with own text; seamless loop where the reference loops |

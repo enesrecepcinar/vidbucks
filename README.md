@@ -112,7 +112,7 @@ python core/tools/quality_gate.py out/video.mp4 --script script.txt --speech --b
 ## Motion and sound
 
 - **One motion language** (`core/src/kits/motion.ts`): five personalities (calm, premium, confident, playful, snappy) set every entrance, exit, stagger, bounce, label lag and camera push of a film; curves by role (enter ease-out, exit ease-in at half the time, move ease-in-out); durations that grow with distance; group reveals capped at ~0.8 s; colour mixed in OKLCH; a sync-safe speed ramp. The rules behind it are numbered in [docs/motion-rules.md](docs/motion-rules.md).
-- **Sound follows the picture:** each kit announces its own hits (a pencil scratch, a paper pop, a plate slide, a chime, ticks under a counting number, a whoosh into a new world); `sfx_synth.py` synthesises them (no samples, nothing to license) and `mix_film.py` puts compressed voice, ducked music and effects at -16 LUFS. `beatmap.py` finds a track's beats and snaps big moments onto them.
+- **Sound follows the picture:** each kit announces its own hits (a pencil scratch, a paper pop, a plate slide, a chime, ticks under a counting number, a whoosh into a new world); `sfx_synth.py` plays a real CC0 recording for each hit when the sound packs are installed (`sfx_packs.py install sfx-kit uisfx opus`: 1,324 sounds, each placed on its own sync point, takes rotating so repeats differ) and synthesises the rest and `mix_film.py` puts compressed voice, ducked music and effects at -16 LUFS. `beatmap.py` finds a track's beats and snaps big moments onto them.
 
 ## AI video models (flow-bridge)
 

@@ -31,14 +31,22 @@ import { MediaReel, MediaGallery, reelLength } from "../kits/media/Media";
 import { MediaSceneDemo, IconSheet } from "../kits/media/MediaScene";
 import { ChatStory, DEMO_CHAT } from "../kits/chat/ChatStory";
 import { MorphDemo } from "../kits/media/Bridge";
+import { VidbucksPromo, PROMO_LEN } from "../kits/promo/VidbucksPromo";
+import { VidbucksPromo2, PROMO2_LEN } from "../kits/promo/VidbucksPromo2";
+import { VidbucksPromo3, PROMO3_LEN } from "../kits/promo/VidbucksPromo3";
+import { VidbucksPromo4, PROMO4_LEN } from "../kits/promo/VidbucksPromo4";
+import { ClipVlog } from "../kits/vlog/ClipVlog";
 import { AdSpot, DEMO_AD, AD_LEN } from "../kits/ad/AdSpot";
 import { LogoReveal, DEMO_LOGO } from "../kits/logo/LogoReveal";
+import { StormWorld, DEMO_STORM, stormLength } from "../kits/storm/StormWorld";
 import { Whiteboard, DEMO_WB, boardLength } from "../kits/media/Whiteboard";
 import { DataRace, DEMO_RACE, raceLength } from "../kits/data/DataRace";
 import { Countdown, DEMO_COUNT, countLength } from "../kits/list/Countdown";
 import { GymEdit, GYM_DURATION } from "../kits/gym/GymEdit";
 import { GymTech, TECH_DURATION } from "../kits/gym/GymTech";
 import { BunkerDemo, BUNKER_DURATION } from "../kits/bunker/BunkerDemo";
+import { NewsFilm, newsLength } from "../kits/news/NewsFilm";
+import { NSA_CFG } from "../kits/news/nsa_cfg";
 
 export const TemplateCompositions: React.FC = () => (
   <>
@@ -63,12 +71,19 @@ export const TemplateCompositions: React.FC = () => (
     <Composition id="MorphDemo" component={MorphDemo} width={1920} height={1080} fps={30} durationInFrames={150} />
     <Composition id="Whiteboard" component={Whiteboard as React.FC<any>} width={1920} height={1080} fps={30} durationInFrames={Math.round(boardLength(DEMO_WB) * 30)} defaultProps={{ cfg: DEMO_WB }} calculateMetadata={({ props }: { props: any }) => ({ durationInFrames: Math.round(boardLength(props.cfg) * 30) })} />
     <Composition id="AdSpot" component={AdSpot as React.FC<any>} width={1080} height={1920} fps={30} durationInFrames={AD_LEN * 30} defaultProps={DEMO_AD} calculateMetadata={({ props }: { props: any }) => (props.size ? { width: props.size[0], height: props.size[1] } : {})} />
+    <Composition id="StormWorld" component={StormWorld as React.FC<any>} width={1920} height={1080} fps={30} durationInFrames={Math.round(stormLength(DEMO_STORM) * 30)} defaultProps={{ cfg: DEMO_STORM }} calculateMetadata={({ props }: { props: any }) => ({ durationInFrames: Math.round(stormLength(props.cfg) * 30), ...(props.size ? { width: props.size[0], height: props.size[1] } : {}) })} />
     <Composition id="LogoReveal" component={LogoReveal as React.FC<any>} width={1920} height={1080} fps={30} durationInFrames={135} defaultProps={{ logo: DEMO_LOGO }} calculateMetadata={({ props }: { props: any }) => ({ durationInFrames: Math.round((props.duration ?? 4.5) * 30), ...(props.size ? { width: props.size[0], height: props.size[1] } : {}) })} />
+    <Composition id="ClipVlog" component={ClipVlog as React.FC<any>} width={1080} height={1920} fps={30} durationInFrames={300} defaultProps={{ cfg: { segments: [], captions: [], duration: 10 } }} calculateMetadata={({ props }: { props: any }) => ({ durationInFrames: Math.round(props.cfg.duration * 30) })} />
+    <Composition id="VidbucksPromo" component={VidbucksPromo as React.FC<any>} width={1920} height={1080} fps={30} durationInFrames={PROMO_LEN * 30} defaultProps={{}} calculateMetadata={({ props }: { props: any }) => (props.size ? { width: props.size[0], height: props.size[1] } : {})} />
+    <Composition id="VidbucksPromo2" component={VidbucksPromo2 as React.FC<any>} width={1920} height={1080} fps={30} durationInFrames={PROMO2_LEN * 30} defaultProps={{}} calculateMetadata={({ props }: { props: any }) => (props.size ? { width: props.size[0], height: props.size[1] } : {})} />
+    <Composition id="VidbucksPromo3" component={VidbucksPromo3 as React.FC<any>} width={1920} height={1080} fps={30} durationInFrames={PROMO3_LEN * 30} defaultProps={{}} calculateMetadata={({ props }: { props: any }) => (props.size ? { width: props.size[0], height: props.size[1] } : {})} />
+    <Composition id="VidbucksPromo4" component={VidbucksPromo4 as React.FC<any>} width={1920} height={1080} fps={30} durationInFrames={PROMO4_LEN * 30} defaultProps={{}} calculateMetadata={({ props }: { props: any }) => (props.size ? { width: props.size[0], height: props.size[1] } : {})} />
     <Composition id="MediaGallery" component={MediaGallery as React.FC<any>} width={1920} height={760} fps={30} durationInFrames={1} defaultProps={{ t: 2.8 }} />
     <Composition id="CardGallery" component={CardGallery as React.FC<any>} width={1920} height={2920} fps={30} durationInFrames={1} defaultProps={{}} />
     <Composition id="FootageEdit" component={FootageEdit as React.FC<any>} width={1920} height={1080} fps={30} durationInFrames={30}
       defaultProps={{ video: "edits/sample/cut.mp4", words: [], duration: 1, fps: 30, size: [1920, 1080], captions: "sentence", overlays: [] } as FootageProps}
       calculateMetadata={({ props }) => { const p = props as unknown as FootageProps; return { durationInFrames: Math.max(1, Math.round(p.duration * p.fps)), fps: p.fps, width: p.size[0], height: p.size[1] }; }} />
+    <Composition id="NSA-News" component={NewsFilm as React.FC<any>} width={1920} height={1080} fps={30} durationInFrames={newsLength(NSA_CFG)} defaultProps={{ cfg: NSA_CFG }} />
     <Composition id="Bunker-demo" component={BunkerDemo} width={1920} height={1080} fps={30} durationInFrames={Math.round(BUNKER_DURATION * 30)} />
     <Composition id="Gym-tech" component={GymTech} width={1080} height={1920} fps={30} durationInFrames={Math.round(TECH_DURATION * 30)} />
     <Composition id="Gym-edit" component={GymEdit} width={1080} height={1920} fps={30} durationInFrames={Math.round(GYM_DURATION * 30)} />

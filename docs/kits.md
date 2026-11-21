@@ -30,7 +30,7 @@ drafted straight from the narration. Demos: `Tpl-MultiStyle` (director's default
 - **Easing**: `PRESS` = cubic-bezier(.7,0,.2,1) for snaps that land on a beat (`snapTo`), `easeOutCubic`, `easeOutBack`, `smooth`.
 - **Camera**: keys `{t, x, y, zoom, rot}` in world units (4K px at zoom 1), monotone cubic Hermite (no overshoot
   between holds), zoom in log space, slow handheld wobble, a spotlight with its own keys. `worldTransform`, `toScreen`.
-- **Cues**: items announce their own sounds; `kit_cues.py` collects them, `sfx_synth.py` synthesises every kind
+- **Cues**: items announce their own sounds; `kit_cues.py` collects them, `sfx_synth.py` plays a real CC0 sample per kind when the packs are installed (`tools/sfx_packs.py`; a hit's transient lands on `t`, a riser with `dur` arrives at `t + dur`, continuous kinds such as marker/keys/ticks are tiled to `dur`) and synthesises every other kind
   (pop, slide, whoosh, marker, pencil, ticks, stamp, impact, boom, heartbeat, riser, snap, thunk, knife, glock, …).
 
 ## BoardFilm (`src/kits/board/`, demo `Tpl-BoardFilm`)
@@ -144,6 +144,22 @@ registry as `config` templates, like the older ones.
 - **LogoReveal** (`src/kits/logo/LogoReveal.tsx` + `tools/logo_prep.py`): draw / assemble / mask, then a held shine; the land
   moment (`LAND[style]`) carries the sound logo's impact; a part as dark as the ground draws its outline in the ink colour.
 
+## NewsFilm (`src/kits/news/NewsFilm.tsx`, example `NSA-News`, planner `videos/nsa-kesinti/build_shots.py`)
+Long-form news explainer on the narration clock. Shot kinds: photo (camera move, "File photo" credit), video, archive (4:3 film frame),
+article (real cropped page capture from `cdp_shot.mjs`, highlighter on the spoken sentence, outlet + date chip), xpost (recreated card from
+oEmbed-verified text), wall (headline mosaic), split (old/new), breaking, chapter, headline, quote, stat, timeline, grid, map, network,
+causes, board (confirmed / reported / unknown), compare; persistent bug, chapter lower third, LATEST ticker, per-chapter tint.
+Rules: every on-screen claim carries its source; a stock picture is never tagged beyond what its Commons title says; a news cut changes
+its language per chapter (transition set, tint, shot kinds) and no asset repeats unless it is a deliberate bookend or a second quote
+from the same article.
+
+## Transitions (`src/kits/transitions.tsx`)
+`<TransitionStage kind p A B dir at />` blends two layers at progress p: push, whip (motion blur peaks at the seam),
+zoom (fly through A into B), flip / spin (3D card, roll), stack (B slides over a sinking A), iris / diagonal / wave / blob
+(masks; blob is an ink blot from a point), tiles / bars (colour covers), glitch (slices + colour split), flash, luma (soft
+dissolve), split (strips; light layers only - it renders A per strip). `pickTransition(i)` rotates kinds without neighbours
+repeating. Used by `VidbucksPromo3` for scene joins, the type blocks and the reel.
+
 ## Mixing kits
 ```tsx
 <Series>
@@ -161,3 +177,11 @@ engine (one camera, items that cue their own sounds), a declarative layer-manife
 caption contract, and the Lemo-Opuscar style library (a style = a written prompt + a hand-built engine; reading-time and
 speech checks; a page rendered as a pure function of time). Lemo-Opuscar's style documents ship unchanged, with credit
 and under their own non-commercial licence, in `third_party/lemo-opuscar/` (see its README).
+
+## StormWorld (2D paper-landscape documentary: weather, disasters, nature, science, history of places)
+`src/kits/storm/StormWorld.tsx`, composition `StormWorld`, props `{ cfg: { shots, trans?, audio? }, size? }` (16:9 or 9:16; in portrait the inserts render on a 16:9 box scaled to the width). Plan + timing -> props + cues: `python tools/storm_build.py storm.json --timing timing.json --out props.json --cues cues.json --audio <public path>`; shots name the narration `line` they start on (or carry a `dur`).
+Every shot takes `in` (cut | dissolve | iris | flash | slide) and `cam` keyframes `[{ t, z, x, y }]` (zoom 1 = wide, focus 0..1; without keys a slow push).
+- `scene` (the world): `sky` dusk|day|storm|night|clear|smoke|sunset, `land` plains|farm|city|town|coast|mountains|desert|forest, `tornado`/`tornadoes` `{ shape, x, scale, life { at, descend, ropeOut, gone } }` (rope, cone, stovepipe, wedge, hourglass, corkscrew, sideways, twin, satellite, walker), `events [{ kind flood|fire|quake|volcano|wave|snow|hail|meteor|dust, at, ramp, power, x }]`, `rain`, `lightning [t]`, `birds` (flock start), `observer { x, tag, pose idle|shade|point|camera|binoculars, poseAt, coat, friend, friendPose }`, `place [PLACE, DATE]`, `notes [{ t, kind title|measure|dot, text, x, y, w }]`, `counter { t, value, label }`. Calm skies without a storm drop the cloud ceiling.
+- `notebook`: `title`, `entries` (6 slots), `checks`, `photo { shape | world, caption, slot }`, `sketch { shape, slot, label }`, `write`.
+- Inserts: `viewfinder` (any world, shutter flash at `flashAt`), `polaroid` (`shape` or `world`; develops, caption written, flies away), `card`, `number`, `scale` (chips + highlight), `waffle` (10x10 percent), `panel` (`shapes` or `worlds`, `held` hands), `diagram` (`tube` | `stage`), `newspaper` (`shape` or `world`), `map` (paper damage/route path), `tv` (`shape` or `world`).
+Logic rules: funnels and events sit behind the skyline; a slot the hand writes into has no printed label; routes draw on with their band; markers sit on the computed positions; a counter of buildings needs buildings in shot; observers never overlap; unsourced numbers say "illustrative"; labels stay inside the 4.5 % margin. Reference: `knowledge/references/youseewhy/STYLE.md`.

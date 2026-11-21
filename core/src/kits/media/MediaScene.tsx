@@ -410,7 +410,7 @@ export const DEMO_CFG = (medium: Medium): MediaCfg => ({ medium, beats: [
   { line: 1, kind: "object", icon: "house", label: "one house" }, { line: 2, kind: "number", big: "4,500", label: "homes by 1900" },
   { line: 3, kind: "compare", icons: ["house", "coin"], labels: ["homes", "money"], link: "to", w2: 2 }, { line: 4, kind: "list", icon: "clock", label: "time", items: [{ text: "rent", w: 1 }, { text: "debt", w: 2 }, { text: "nothing left", w: 3 }] },
 ] });
-export const MediaSceneDemo: React.FC<{ medium?: Medium; motion?: PersonaName }> = ({ medium = "crosshatch", motion }) => <MediaScene cfg={{ ...DEMO_CFG(medium), motion }} timing={DEMO_TIMING} />;
+export const MediaSceneDemo: React.FC<{ medium?: Medium; motion?: PersonaName; captions?: boolean }> = ({ medium = "crosshatch", motion, captions = true }) => <MediaScene cfg={{ ...DEMO_CFG(medium), motion, captions }} timing={DEMO_TIMING} />;
 
 /** every icon in one SVG medium, finished: the sheet to check the library (pixel and isometric reuse the same outlines) */
 export const IconSheet: React.FC<{ medium?: Medium }> = ({ medium = "crosshatch" }) => {

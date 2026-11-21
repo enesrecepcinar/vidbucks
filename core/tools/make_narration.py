@@ -205,6 +205,13 @@ def run_chatterbox():
         for w in re.sub(r"[^\wçğıöşüâ'. ]", " ", t).split():
             w = w.split("'")[0]
             m_ = re.fullmatch(r"(\d+)(\.?)", w)
+            if m_ and a.cb_lang != "tr":   # non-Turkish: spell numbers in that language (num2words)
+                try:
+                    from num2words import num2words
+                    out += re.sub(r"[^\w ]", " ", num2words(int(m_.group(1)), lang=a.cb_lang)).split()
+                except Exception:
+                    out.append(m_.group(1))
+                continue
             if m_:
                 ws = spell(int(m_.group(1)))
                 if m_.group(2) and ws and ws[-1] in ORD: ws[-1] = ORD[ws[-1]]

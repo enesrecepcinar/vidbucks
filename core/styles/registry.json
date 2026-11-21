@@ -2820,5 +2820,31 @@
    "medium": "math"
   },
   "readiness": "native"
+ },
+ {
+  "id": "storm-world",
+  "name": "Storm World (StormWorld kit: 2D paper-landscape documentary for weather, disasters, nature and science)",
+  "category": "Vidbucks templates",
+  "family": "vidbucks",
+  "dark": false,
+  "suits": {
+   "place": 0.85,
+   "science": 0.9,
+   "story": 0.75,
+   "number": 0.6,
+   "comparison": 0.6,
+   "title": 0.5,
+   "map": 0.6
+  },
+  "uses": [
+   "Tornadoes, storms, floods, wildfires, earthquakes, volcanoes, tsunamis, blizzards",
+   "Nature and earth-science explainers",
+   "Field-notebook list videos (top-N of rare cases)",
+   "Place stories with a map, newspaper and archive inserts"
+  ],
+  "source": "vidbucks",
+  "renderer": null,
+  "preset": null,
+  "readiness": "config"
  }
 ]
