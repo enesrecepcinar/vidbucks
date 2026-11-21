@@ -18,7 +18,7 @@ const n = Number(args.n ?? 3);
 const sources = (args.source ?? "all") === "all" ? ["openverse", "wikimedia", "pexels", "pixabay"] : String(args.source).split(",");
 const outDir = path.resolve(args.out ?? "public/stock");
 const MAX_BYTES = 40 * 1024 * 1024;
-const UA = "vidbucks/2.0 (open-licence stock fetch)";
+const UA = "Vidbucks/2.2 (https://github.com/eynalliomer/vidbucks; open-licence stock fetch)";
 if (!q) { console.error('usage: --q "query" [--type image|video] [--n 3] [--source openverse,wikimedia,pexels,pixabay]'); process.exit(1); }
 
 const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40);
@@ -30,6 +30,7 @@ const getJson = async (url, headers = {}) => {
 };
 
 // Each finder returns [{url, title, creator, license, licenseUrl, pageUrl, ext, source}]
+const transcoded = (u0) => { const u = u0.split("?")[0], m = u.match(/^(https:\/\/upload\.wikimedia\.org\/wikipedia\/commons)\/(\w\/\w\w)\/(.+)$/); if (!m) return [u0]; const [, base, dir, name] = m; return [`${base}/transcoded/${dir}/${name}/${name}.720p.vp9.webm`, `${base}/transcoded/${dir}/${name}/${name}.480p.vp9.webm`]; };
 const finders = {
   async openverse() {
     if (type !== "image") return [];
@@ -39,6 +40,7 @@ const finders = {
       licenseUrl: r.license_url, pageUrl: r.foreign_landing_url, ext: path.extname(new URL(r.url).pathname) || ".jpg", source: `openverse/${r.source}`,
     }));
   },
+  /** Commons keeps web-sized transcodes of every video: 720p, then 480p, then the original */
   async wikimedia() {
     const filetype = type === "video" ? "video" : "bitmap";
     const d = await getJson(
@@ -48,8 +50,8 @@ const finders = {
       const ii = p.imageinfo?.[0];
       const m = ii?.extmetadata ?? {};
       return {
-        url: type === "video" ? ii.url : ii.thumburl ?? ii.url, title: p.title.replace(/^File:/, ""), creator: strip(m.Artist?.value) || "unknown",
-        license: m.LicenseShortName?.value ?? "unknown", licenseUrl: m.LicenseUrl?.value ?? "", pageUrl: ii.descriptionurl, ext: path.extname(p.title) || ".jpg", source: "wikimedia",
+        url: type === "video" ? transcoded(ii.url)[0] : ii.thumburl ?? ii.url, alt: type === "video" ? [...transcoded(ii.url).slice(1), ii.url] : [], title: p.title.replace(/^File:/, ""), creator: strip(m.Artist?.value) || "unknown",
+        license: m.LicenseShortName?.value ?? "unknown", licenseUrl: m.LicenseUrl?.value ?? "", pageUrl: ii.descriptionurl, ext: type === "video" ? ".webm" : path.extname(p.title) || ".jpg", source: "wikimedia",
       };
     });
   },
@@ -95,10 +97,11 @@ for (const s of sources) {
     if (saved >= n) break;
     if (!OK.test(c.license) || /nc|nd/i.test(c.license.replace(/(cc by)/i, ""))) continue; // skip NonCommercial / NoDerivs
     try {
-      const r = await fetch(c.url, { headers: { "User-Agent": UA } });
-      if (!r.ok) continue;
+      let r = await fetch(c.url, { headers: { "User-Agent": UA } });
+      for (const u of c.alt ?? []) { if (r.ok) break; r = await fetch(u, { headers: { "User-Agent": UA } }); }
+      if (!r.ok) { console.warn(`  skip ${c.title}: HTTP ${r.status}`); continue; }
       const buf = Buffer.from(await r.arrayBuffer());
-      if (buf.length > MAX_BYTES || buf.length < 5000) continue;
+      if (buf.length > MAX_BYTES || buf.length < 5000) { console.warn(`  skip ${c.title}: ${(buf.length / 1e6).toFixed(1)} MB`); continue; }
       const name = `${slug(q)}-${credits.length + 1}${c.ext.toLowerCase()}`;
       await writeFile(path.join(outDir, name), buf);
       credits.push({ file: name, query: q, type, ...c, attribution: NEEDS_ATTRIBUTION.test(c.license), fetchedAt: new Date().toISOString().slice(0, 10) });
