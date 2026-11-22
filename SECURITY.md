@@ -12,4 +12,4 @@ Please do **not** open a public issue for a security problem. Use GitHub's "Repo
 - anything that makes the tool download, copy or redistribute material it should not
 
 ## Built-in safeguards
-Setup never creates accounts or types credentials; API keys are stored only in the git-ignored `core/.env`; the SessionStart hook only reads the local status; reference videos are analysed through public metadata and viewing, not downloaded.
+Setup never creates accounts or types credentials; API keys are stored only in the git-ignored `core/.env`; the SessionStart hook only reads the local status; reference videos are downloaded only into the git-ignored `knowledge/references/` folder, and browser cookies are used for a download only when the user sets `VIDBUCKS_COOKIES_BROWSER` themselves.

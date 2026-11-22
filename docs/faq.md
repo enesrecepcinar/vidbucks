@@ -1,6 +1,6 @@
 # FAQ
 
-**Does Vidbucks download the reference video?** Not by itself. Links are analysed through public metadata, captions and thumbnails plus viewing in the browser; files you provide are measured locally. You are responsible for the rights to any file you supply.
+**Does Vidbucks download the reference video?** Yes. `analyze_reference.py --link` reads the metadata and captions, then downloads the video (`tools/fetch_reference.py`: yt-dlp, then a media-API fallback running on your machine) and measures it frame by frame. Works for YouTube, Shorts, X, Instagram, TikTok, Reddit, Vimeo and more; the files stay locally in the git-ignored `knowledge/references/`. `--no-fetch` keeps it metadata-only. You are responsible for the rights to what you download and publish (see `docs/reference-fetch.md`).
 
 **Can it copy a video exactly?** By default it copies *structure, pacing and style* and builds original content with your words, brand and licensed assets. You decide: if you want a closer match, or want your own footage, logos or screenshots used as they are, it does that and tells you once what the trade-off is.
 

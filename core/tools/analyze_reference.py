@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 """analyze_reference.py - measure a reference video and propose a scene-by-scene plan.
 
-  python tools/analyze_reference.py --link <youtube url> [--lang en] [--no-channel]
+  python tools/analyze_reference.py --link <any video url> [--lang en] [--no-channel] [--no-fetch]
   python tools/analyze_reference.py --file <video.mp4>   [--lang en] [--no-transcript]
   python tools/analyze_reference.py --compare <reference/fingerprint.json> <candidate/fingerprint.json>
 
-LINK mode uses public metadata, captions and the thumbnail only (NO media download, YouTube ToS).
-FILE mode measures the video itself (cuts, palette, motion, beat sync, loudness, transcript) - the user supplies the file.
+LINK mode reads public metadata, captions and the thumbnail, then DOWNLOADS the video (tools/fetch_reference.py:
+yt-dlp, then the media-API fallback) and measures it like FILE mode in the same folder (link data kept as
+link_report.md / fingerprint.json["link"]). --no-fetch keeps the old metadata-only behaviour; if every download
+method fails the metadata report is kept and the visual pass in the Browser pane is the fallback.
+FILE mode measures the video itself (cuts, palette, motion, beat sync, loudness, transcript).
 Both write knowledge/references/<slug>/ : report.md, fingerprint.json, scene_plan.json, scene_plan.md (+thumb / sheet).
 Every number is tagged measured or inferred. Dependencies: numpy, Pillow, ffmpeg, yt-dlp (link), faster-whisper (optional).
 """
@@ -566,9 +569,9 @@ def whisper_words(path, lang):
         words = [(w.start, w.word.strip()) for s in segs for w in (s.words or []) if w.word.strip()]
         return words, info.language
 
-def analyze_file(path, lang, want_tr):
+def analyze_file(path, lang, want_tr, out=None):
     name = os.path.splitext(os.path.basename(path))[0]
-    out = os.path.join(REFS, slug(name)[:30] + "-file"); os.makedirs(out, exist_ok=True)
+    out = out or os.path.join(REFS, slug(name)[:30] + "-file"); os.makedirs(out, exist_ok=True)
     pr = probe(path)
     fr_full, fps = read_frames(path, fps=15 if pr["duration"] < 240 else 8)
     roi = find_roi(fr_full)
@@ -816,15 +819,47 @@ def sidebyside(ref, cand, out_png, n=8):
             x += ws[k]
     os.makedirs(os.path.dirname(out_png) or ".", exist_ok=True); sheet.save(out_png); print("SIDEBYSIDE", out_png)
 
+def link_then_file(a):
+    """metadata + captions first (when the platform gives them), then the video itself, measured in the same folder."""
+    from fetch_reference import fetch, slug_for
+    try:
+        out, fp, plan = analyze_link(a.link, a.lang, not a.no_channel)
+    except Exception as e:      # e.g. an Instagram/X post yt-dlp cannot read metadata for: the media API may still fetch it
+        if a.no_fetch: raise
+        print(f"link metadata failed ({str(e)[:160]}); trying the download alone", file=sys.stderr)
+        out, fp, plan = os.path.join(REFS, slug_for(a.link)), {"mode": "link", "url": a.link, "metadata_error": str(e)[:300]}, []
+        os.makedirs(out, exist_ok=True)
+    if a.no_fetch: return out, fp, plan
+    try:
+        m = fetch(a.link, os.path.join(out, "source"), a.height)
+    except RuntimeError as e:
+        print(f"DOWNLOAD FAILED - link data only; do the Browser-pane visual pass.\n{e}", file=sys.stderr)
+        return out, fp, plan
+    vid = os.path.join(m["dir"], m["files"][0])
+    if not vid.lower().endswith((".mp4", ".mkv", ".webm", ".mov", ".m4v")):
+        print(f"downloaded {m['files']} (no video stream): link data only", file=sys.stderr); return out, fp, plan
+    for f in ("report.md", "fingerprint.json"):
+        if os.path.exists(os.path.join(out, f)): os.replace(os.path.join(out, f), os.path.join(out, "link_" + f))
+    out, ffp, fplan = analyze_file(vid, (a.lang or (fp.get("transcript_lang") or "")).split("-")[0].lower(), not a.no_transcript, out=out)
+    fpp = os.path.join(out, "fingerprint.json"); full = json.load(open(fpp))
+    full["link"] = fp; full["source"] = {k: m[k] for k in ("url", "method", "files", "duration_s", "width", "height", "fetched_at") if k in m}
+    json.dump(full, open(fpp, "w"), indent=1, ensure_ascii=False)
+    with open(os.path.join(out, "report.md"), "a", encoding="utf-8") as r:
+        r.write(f"\n\n## Source\n- downloaded with {m['method']} from {a.link} -> `source/{m['files'][0]}`\n"
+                "- link metadata, captions and channel context: `link_report.md`\n")
+    return out, dict(ffp, link=fp), fplan or plan
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--link"); ap.add_argument("--file"); ap.add_argument("--lang", default="")
     ap.add_argument("--no-channel", action="store_true"); ap.add_argument("--no-transcript", action="store_true")
+    ap.add_argument("--no-fetch", action="store_true", help="link mode: metadata and captions only, no video download")
+    ap.add_argument("--height", type=int, default=1080, help="link mode: max download height")
     ap.add_argument("--compare", nargs=2); ap.add_argument("--sidebyside", nargs=3, metavar=("REF_MP4", "CAND_MP4", "OUT_PNG"))
     a = ap.parse_args()
     if a.compare: compare(*a.compare); return
     if a.sidebyside: sidebyside(*a.sidebyside); return
-    if a.link: out, fp, plan = analyze_link(a.link, a.lang, not a.no_channel)
+    if a.link: out, fp, plan = link_then_file(a)
     elif a.file: out, fp, plan = analyze_file(a.file, a.lang, not a.no_transcript)
     else: ap.error("give --link, --file or --compare"); return
     print("OUT", out); print(open(os.path.join(out, "report.md"), encoding="utf-8").read())

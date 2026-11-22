@@ -216,7 +216,7 @@ vidbucks/
 - **Form, never copy.** A reference gives rhythm, structure and look; ideas, lines, characters and shots are new.
 - **Autonomy with boundaries.** The assistant never asks for references, photos or analysis; it asks only what is yours to decide.
 - **Honest limits.** No claim of hearing audio, no invented statistics, no pretending code can match a photograph.
-- **Clean licences.** No downloading of others' videos, credits for every licensed asset, no private people's faces.
+- **Measured references, clean outputs.** Reference videos are downloaded and measured frame by frame; footage in the output is licensed (credits for every asset) or the user's own choice.
 
 ## Ownership and licence
 

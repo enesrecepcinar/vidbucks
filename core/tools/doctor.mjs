@@ -69,7 +69,10 @@ add("py:faster_whisper", "required", mod("faster_whisper"), "Whisper word timest
 
 /* ---- recommended ---- */
 const ytdlp = run("yt-dlp", ["--version"]);
-add("yt-dlp", "recommended", ytdlp.status === 0, ytdlp.status === 0 ? `yt-dlp ${ytdlp.stdout.trim()}` : "not found - needed to analyse YouTube links (metadata/captions only)", "pip install yt-dlp   (or brew install yt-dlp / winget install yt-dlp)");
+add("yt-dlp", "recommended", ytdlp.status === 0, ytdlp.status === 0 ? `yt-dlp ${ytdlp.stdout.trim()}` : "not found - needed to download and analyse reference links (YouTube, X, Instagram, TikTok...)", "pip install yt-dlp   (or brew install yt-dlp / winget install yt-dlp)");
+{ const envTxt = fs.existsSync(path.join(root, ".env")) ? fs.readFileSync(path.join(root, ".env"), "utf8") : "";
+  const api = process.env.VIDBUCKS_MEDIA_API || (envTxt.match(/^VIDBUCKS_MEDIA_API=(.+)$/m) || [])[1];
+  add("media-api", "optional", !!api, api ? `reference download fallback: ${api.trim()}` : "not set - yt-dlp alone downloads references (fallback API: docs/reference-fetch.md)", "self-host a media API, then: node core/tools/doctor.mjs --set VIDBUCKS_MEDIA_API=http://localhost:9000"); }
 const skillsDir = path.join(home, ".claude", "skills");
 const remotionSkills = fs.existsSync(skillsDir) ? fs.readdirSync(skillsDir).filter((d) => d.startsWith("remotion")) : [];
 add("remotion-skills", "recommended", remotionSkills.length > 0, remotionSkills.length ? `${remotionSkills.length} Remotion skills installed (${remotionSkills.slice(0, 3).join(", ")}...)` : "Remotion agent skills not found", "npx skills add remotion-dev/skills   (official Remotion skills; Vidbucks uses /remotion-best-practices)");

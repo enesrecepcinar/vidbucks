@@ -7,8 +7,8 @@ description: Study a reference YouTube CHANNEL to extract its repeatable formula
 
 Goal: understand HOW a channel is built (packaging + structure), then create ORIGINAL content in that structure. This skill covers the channel level (titles, thumbnails, length, cadence, hook); the video level (look, motion, sound, build, measurement) is `vidbucks-reference-to-video` - run it for the reference video you pick in step 3.
 
-## Data the assistant gathers itself (no video downloads, within the platform's terms; files the user brings are used normally)
-Public channel pages, video lists, titles, durations, view counts, upload dates, descriptions, captions, thumbnails (analysis only); your own viewing in the Browser pane. `yt-dlp` is used for metadata and captions only (never media). Rounded numbers are fine; say so. A video FILE the user supplies may be measured (the responsibility for it is the user's).
+## Data the assistant gathers itself (files the user brings are used normally)
+Public channel pages, video lists, titles, durations, view counts, upload dates, descriptions, captions, thumbnails (analysis only); your own viewing in the Browser pane. `yt-dlp` gives metadata and captions; the videos you pick for the deep look are downloaded with `tools/fetch_reference.py` (or `analyze_reference.py --link`) and measured frame by frame. Rounded numbers are fine; say so. A video FILE the user supplies may be measured (the responsibility for it is the user's).
 
 ## Steps
 1. **Measure:** `python core/tools/analyze_reference.py --link "<video url>"` for 3-5 videos of the channel (typical and best). It prints engagement, title skeleton, thumbnail palette/contrast/edge density, caption timing, chapters and the channel context (median views, outlier multiple, cadence, typical length, top titles, skeleton counts).
