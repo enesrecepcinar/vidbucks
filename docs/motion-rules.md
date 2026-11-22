@@ -1,4 +1,6 @@
-# Motion rules (apply to every composition)
+# Motion rules (defaults for every composition)
+
+These are defaults with reasons, not bans: when the user's direction differs, follow the user and note a trade-off once.
 
 1. **No linear motion.** Every `interpolate()` gets an easing curve and `extrapolateLeft/Right: "clamp"`. Entrances prefer `spring()`. Use gentle sine curves for long moves: every fast eased move registers as a "cut" when measured.
 2. **Entrances animate two or three properties together** (opacity + translate + scale/blur). A lone fade looks cheap.

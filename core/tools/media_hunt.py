@@ -8,7 +8,7 @@
 visuals.json (the visual treatment, see tools/visual_check.py) gives each line a "media" block:
   {"queries": ["Piri Reis map 1513", "Topkapi palace library manuscript"], "type": "image" | "video", "n": 4, "need": true}
 hunt  runs every query on every source (Wikimedia, Openverse; Pexels and Pixabay when PEXELS_API_KEY / PIXABAY_API_KEY are
-      in core/.env), keeps commercial-use licences only (PD, CC0, CC BY, CC BY-SA, Pexels, Pixabay; never NC/ND), drops
+      in core/.env), keeps commercial-use licences only (PD, CC0, CC BY, CC BY-SA, Pexels, Pixabay; NC/ND left out by default - files the user brings are used as given), drops
       duplicates and pictures under --min-width px, and writes media/cands/L<id>/sheet.jpg with numbered tiles.
       LOOK at every sheet: pick the most specific picture for the line, not the prettiest.
 pick  copies the choice to public/<visuals.public_dir>/L<id>.<ext> (optionally cropped, fractions of w/h), stores its aspect,

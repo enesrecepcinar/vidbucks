@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""variety_check.py - refuses sameness: inside a film and across a batch of films.
+"""variety_check.py - flags sameness: inside a film and across a batch of films.
 
   python tools/variety_check.py videos/films/*/visuals.json          # a batch
   python tools/variety_check.py videos/x/visuals.json                # one film

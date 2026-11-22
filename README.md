@@ -171,7 +171,7 @@ Agent personas: [`reference-analyst`](agents/reference-analyst.md), [`fidelity-r
 1. **Measure** the reference (`core/tools/analyze_reference.py`) -> `knowledge/references/<slug>/` with `report.md`, `fingerprint.json` (cuts, takes and seams, transcript words), `style_spec.json`, `scene_plan.md`, `sheet.png`.
 2. **Review shot by shot** (`core/tools/shot_review.py build / check / apply`): evidence for every shot, then the verified screen-time mix and the prompt formula; name the type and devices; choose the route.
 3. **Plan** scenes for *your* content and pass the three approval gates (story, look, board); **collect** licensed assets; **build** from a template, a kit or new code; add voice, synthesised hits and a beat-matched track.
-4. **Gate and verify**: `quality_gate.py`, `text_check.py` and `sync_check.py` on the render (a FAIL blocks delivery), look at the review sheets, measure it, `--compare` against the reference, `--sidebyside`, and look; offer the jury. Fix rows -> actions (slow the easing, change the tempo, move hits onto transitions, match loudness...).
+4. **Gate and verify**: `quality_gate.py`, `text_check.py` and `sync_check.py` on the render (a FAIL blocks delivery: fix it and gate again), look at the review sheets, measure it, `--compare` against the reference, `--sidebyside`, and look; offer the jury. Fix rows -> actions (slow the easing, change the tempo, move hits onto transitions, match loudness...).
 5. **Deliver** with the score table, credit lines and an honest note about what was and was not verified.
 
 A clean score never replaces looking, and a photographic reference caps what code can reach (a filmed room, a real face): Vidbucks says so instead of pretending.

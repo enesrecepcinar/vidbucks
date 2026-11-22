@@ -8,7 +8,7 @@
 Why so strict: on the Internet Archive the uploader sets the licence field, and many uploads of TV shows or commercials
 carry a public-domain or CC0 mark they have no right to give. So an item is accepted only when ALL hold:
   * it sits in a curated collection (default: prelinger; home movies only with --homemovies, they show private people)
-  * its licenceurl is public domain / CC0 / CC BY / CC BY-SA (never NC or ND)
+  * its licenceurl is public domain / CC0 / CC BY / CC BY-SA by default (anything else only with --user-ok, recorded in credits)
   * its rights text does not say "reserved"
 Nothing is downloaded whole: `scan` reads single frames over HTTP range requests, `cut` copies only the seconds asked for.
 Every cut is logged with title, year, licence and page URL so the credits can be written.
@@ -110,10 +110,15 @@ def cmd_scan(a):
 def cmd_cut(a):
     meta, md, coll = item(a.id)
     ok, lic = licence_ok(md)
+    risk = []
     if not any(c in coll for c in TRUSTED + (["prelingerhomemovies"] if a.homemovies else [])):
-        raise SystemExit(f"refused: {a.id} is not in a trusted collection ({coll})")
+        risk.append(f"not in a trusted collection ({coll})")
     if not ok:
-        raise SystemExit(f"refused: {a.id} {lic}")
+        risk.append(lic)
+    if risk and not a.user_ok:
+        raise SystemExit(f"stopped: {a.id} {'; '.join(risk)} - the default is clean sources only. If the user wants it anyway, "
+                         f"run again with --user-ok (the licence and source go into credits.json)")
+    if risk: print(f"note: {a.id} used on the user's say-so: {'; '.join(risk)}")
     url, _ = video_file(meta)
     os.makedirs(os.path.dirname(os.path.abspath(a.out)), exist_ok=True)
     vf = f"scale=1280:-2:flags=lanczos,fps=30" + (",hflip" if a.flip else "")
@@ -121,7 +126,7 @@ def cmd_cut(a):
                     "-c:v", "libx264", "-crf", "17", "-preset", "medium", "-pix_fmt", "yuv420p", a.out], check=True, timeout=300)
     page = f"https://archive.org/details/{a.id}"
     rec = {"file": a.out, "title": md.get("title"), "year": md.get("year"), "creator": md.get("creator") or md.get("sponsor") or "unknown",
-           "license": lic, "source": "Internet Archive / " + ",".join(coll), "page": page, "in": a.at, "dur": a.dur}
+           "license": lic, "user_ok": bool(risk), "source": "Internet Archive / " + ",".join(coll), "page": page, "in": a.at, "dur": a.dur}
     cp = a.credits or os.path.join(os.path.dirname(a.out), "credits.json")
     data = json.load(open(cp)) if os.path.exists(cp) else []
     data = [d for d in data if d.get("file") != a.out] + [rec]
@@ -134,7 +139,7 @@ def main():
     sub = p.add_subparsers(dest="cmd", required=True)
     s = sub.add_parser("search"); s.add_argument("--q", required=True); s.add_argument("--years", default="1940-1995"); s.add_argument("--rows", type=int, default=20); s.add_argument("--homemovies", action="store_true")
     s = sub.add_parser("scan"); s.add_argument("--id", required=True); s.add_argument("--every", type=float, default=15); s.add_argument("--from", dest="frm", type=float, default=0); s.add_argument("--to", type=float); s.add_argument("--out", required=True)
-    s = sub.add_parser("cut"); s.add_argument("--id", required=True); s.add_argument("--at", type=float, required=True); s.add_argument("--dur", type=float, default=4); s.add_argument("--out", required=True); s.add_argument("--credits"); s.add_argument("--flip", action="store_true"); s.add_argument("--homemovies", action="store_true")
+    s = sub.add_parser("cut"); s.add_argument("--id", required=True); s.add_argument("--at", type=float, required=True); s.add_argument("--dur", type=float, default=4); s.add_argument("--out", required=True); s.add_argument("--credits"); s.add_argument("--flip", action="store_true"); s.add_argument("--homemovies", action="store_true"); s.add_argument("--user-ok", action="store_true", help="the user chose this item despite its licence or collection")
     a = p.parse_args()
     {"search": cmd_search, "scan": cmd_scan, "cut": cmd_cut}[a.cmd](a)
 

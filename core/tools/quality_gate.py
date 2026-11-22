@@ -14,7 +14,8 @@ Checks (FAIL blocks delivery, WARN is shown with a timecode and a fix):
   repeats    adjacent shots with the same framing; one-frame pops/flashes; frozen and black stretches
   dead air   silences >= 1.2 s (ffmpeg silencedetect) and the longest one
   text       words burned into the picture (Apple Vision OCR on macOS; tesseract if installed; else "not checked")
-  audio      integrated loudness and true peak vs target (-16 LUFS, TP <= -1 dBTP)
+  audio      integrated loudness and true peak vs target (-16 LUFS, TP <= -1 dBTP); clipping, flat tops, dropouts
+  flash      more than 3 flashes a second over a quarter of the frame (WCAG 2.3.1; defects.py)
   delivery   resolution (>= 720p), frame rate, duration vs brief
   script     (--script --speech) each script line found in the speech (Whisper), missing/changed lines listed
   brief      (--brief) duration range, aspect, max still share, cuts per minute range, loudness, required lines
@@ -168,7 +169,7 @@ def script_match(lines, words):
 # ------------------------------------------------------------------ gate
 def gate(path, a):
     global NUM_LANG; NUM_LANG = (a.lang or "")[:2]
-    R = {"file": path, "checks": [], "human_must_check": ["voice tone and timing (the gate cannot hear)", "lip sync on talking shots", "does each joke land (watch, do not read)", "character consistency between shots (face, costume)"]}
+    R = {"file": path, "profile": getattr(a, "profile", "vlog"), "checks": [], "human_must_check": ["voice tone and timing (the gate cannot hear)", "lip sync on talking shots", "does each joke land (watch, do not read)", "character consistency between shots (face, costume)"]}
     def add(sev, check, msg, fix="", t=None):
         R["checks"].append({"severity": sev, "check": check, "t": t, "msg": msg, "fix": fix})
     sd = stream_durations(path); R["streams"] = sd
@@ -196,7 +197,7 @@ def gate(path, a):
     cuts, cd, _ = AR.detect_cuts(fr, fps)
     bounds = [0.0] + [c / fps for c in cuts] + [dur]
     shots = [(bounds[i], bounds[i + 1]) for i in range(len(bounds) - 1) if bounds[i + 1] - bounds[i] > 0.2]
-    R["shots"] = len(shots); R["cuts_per_min"] = round(len(cuts) / dur * 60, 1) if dur else 0
+    R["shots"] = len(shots); R["shot_lens"] = [round(e - s, 2) for s, e in shots]; R["cuts_per_min"] = round(len(cuts) / dur * 60, 1) if dur else 0
     small = fr[:, ::2, ::2]                                               # 96x54 for the per-shot life/framing measures
     gf = small.astype(np.float32).mean(3)
     statics, mids = [], []
@@ -238,6 +239,13 @@ def gate(path, a):
             add("WARN", "audio", f"loudness {L['lufs']} LUFS (target {a.lufs})", f"ffmpeg loudnorm=I={a.lufs}:TP=-1.5")
         if L.get("true_peak_db") is not None and L["true_peak_db"] > MAX_TP:
             add("WARN", "audio", f"true peak {L['true_peak_db']} dBFS (> {MAX_TP})", "add alimiter after loudnorm")
+    # exact defects: flashing past the safe limit (WCAG 2.3.1), clipped / flat-topped audio, dropouts (defects.py)
+    try:
+        import defects as DF
+        D = DF.find(path, True, sd["has_audio"]); R["defects"] = D
+        for sev, chk, msg, fix, t in DF.findings(D): add(sev, chk, msg, fix, t)
+    except Exception as e:
+        add("INFO", "defects", f"flash / clipping / dropout not checked ({e})")
     # burned-in text
     if not a.no_ocr:
         spans, how = burned_text(path, dur)
@@ -295,6 +303,13 @@ def gate(path, a):
         R["reference"] = rows
         for k, rv, cv, ok in rows:
             if not ok: add("WARN", "reference", f"{k} {cv} vs reference {rv}", "match the reference rhythm (see analyze_reference --compare for the full table)")
+    # the user's standing corrections (knowledge/taste.json + --taste files): measured ones are checked, the rest listed
+    try:
+        import taste as TS
+        for sev, chk, msg, fix, t in TS.evaluate(R, TS.load(getattr(a, "taste", None) or [])): add(sev, chk, msg, fix, t)
+        R["human_must_check"] = R.get("human_must_check", []) + TS.look_rules(TS.load(getattr(a, "taste", None) or []))
+    except Exception as e:
+        add("INFO", "taste", f"taste rules not checked ({e})")
     return R
 
 def write(R, out):
@@ -317,7 +332,7 @@ def main():
     ap.add_argument("video"); ap.add_argument("--out"); ap.add_argument("--script"); ap.add_argument("--speech", action="store_true")
     ap.add_argument("--brief"); ap.add_argument("--ref"); ap.add_argument("--lang", default=""); ap.add_argument("--lufs", type=float, default=TARGET_LUFS)
     ap.add_argument("--no-ocr", action="store_true"); ap.add_argument("--allow-text", action="store_true", help="on-screen text is intended (captions, titles): report it as INFO")
-    ap.add_argument("--json")
+    ap.add_argument("--json"); ap.add_argument("--taste", action="append", help="extra taste file(s) (a video's own taste.json); knowledge/taste.json is always read")
     ap.add_argument("--profile", default="vlog", choices=list(PROFILES), help="format profile: vlog (AI/filmed), board, motion, layers")
     a = ap.parse_args()
     R = gate(a.video, a)
@@ -328,6 +343,7 @@ def main():
     print(f"GATE {'FAIL' if n['FAIL'] else 'PASS'}  fail={n['FAIL']} warn={n['WARN']}  shots={R.get('shots')} still={R.get('life', {}).get('still_share')} hook={R.get('hook')} lufs={R.get('loudness', {}).get('lufs')}")
     for c in top: print(f"  {c['severity']} {c['check']}: {c['msg']}")
     print(f"  report: {os.path.join(out, 'report.md')}")
+    if n["FAIL"]: print("  FAIL blocks delivery: fix it and gate again (quality first; only on the user's explicit request is a failing version delivered, with its FAILs listed)")
     sys.exit(1 if n["FAIL"] else 0)
 
 if __name__ == "__main__":

@@ -1,0 +1,5 @@
+{"rules": [
+ {"id": "joins-vary", "text": "Transitions, entrances and sounds vary across the film; the same join or whoosh on every beat is a note the user already gave (2026-11-17).", "check": "look", "severity": "WARN", "since": "2026-11-17", "from": "user note: use different transition styles"},
+ {"id": "news-shows-sources", "text": "News films show the researched sources on screen (article captures with the spoken line highlighted, posts, footage) and change their edit per section; no picture repeats without a reason.", "check": "look", "profiles": ["board", "motion", "vlog"], "since": "2026-11-18", "from": "user note on the NSA film v1"},
+ {"id": "real-footage-over-cards", "text": "Prefer real footage and real pictures to static designed cards when the story has them.", "check": "look", "since": "2026-11-18", "from": "user note on the NSA film v1"}
+]}

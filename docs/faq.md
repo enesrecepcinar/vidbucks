@@ -1,8 +1,8 @@
 # FAQ
 
-**Does Vidbucks download the reference video?** No. Links are analysed through public metadata, captions and thumbnails plus viewing in the browser; files you provide are measured locally. You are responsible for the rights to any file you supply.
+**Does Vidbucks download the reference video?** Not by itself. Links are analysed through public metadata, captions and thumbnails plus viewing in the browser; files you provide are measured locally. You are responsible for the rights to any file you supply.
 
-**Can it copy a video exactly?** No, by design: it copies *structure, pacing and style* and builds original content with your words, brand and licensed assets. It never copies titles, footage, people or logos.
+**Can it copy a video exactly?** By default it copies *structure, pacing and style* and builds original content with your words, brand and licensed assets. You decide: if you want a closer match, or want your own footage, logos or screenshots used as they are, it does that and tells you once what the trade-off is.
 
 **What is it bad at?** Photographic references (a filmed room, a real face, real footage): code-drawn stand-ins cap around half the match; it will tell you and suggest real licensed footage or a different subject. Audio: it cannot listen, so it reports measured loudness/tempo and says it did not hear the result.
 

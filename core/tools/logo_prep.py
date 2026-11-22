@@ -7,7 +7,7 @@
 Reads path, rect, circle, ellipse, line, polyline and polygon (fill / stroke kept), applies translate/scale/matrix
 transforms on elements and groups, and writes {viewBox, parts: [{d, fill, stroke, sw}]} in drawing order. Gradients,
 masks, filters and text are not carried over (flatten them to paths in the design tool first; text -> outlines).
-Only the user's own logo or one they are licensed to animate: never a third party's mark."""
+Meant for the user's own logo (or one they are licensed to animate); whatever mark the user brings is their call."""
 import argparse, json, math, pathlib, re, sys
 import xml.etree.ElementTree as ET
 

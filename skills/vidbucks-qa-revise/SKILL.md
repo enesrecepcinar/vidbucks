@@ -5,9 +5,12 @@ description: Quality gates for a built video and the revision protocol - words c
 
 # vidbucks-qa-revise
 
-## QA gates (run in order, stop at the first failure)
+## QA gates (run in order; a FAIL blocks delivery - fix it and gate again until it passes; quality first: a failing draft is delivered only when the user explicitly asks for it as it is, with the open FAILs listed)
 - **Before anything is generated or narrated:** `python tools/words_check.py script.txt` (dashes, cliches, machine-written tells, scenes > 40 words) and, for AI-video prompts, `python tools/words_check.py prompts.md --prompts` (real-person / IP names that video models refuse, prompts that invite on-screen words, missing no-text guard). FAIL lines are fixed first.
-- **After every render or AI-clip assembly:** `python tools/quality_gate.py out/<video>.mp4 [--script script.txt --speech] [--brief brief.json] [--ref <ref>/fingerprint.json]`. It measures, it does not guess: picture shorter than sound (FAIL), hook motion in 0-2 s, near-still share and static shots, same framing back to back, one-frame pops, black/frozen stretches, silences, burned-in text (Apple Vision OCR on macOS), loudness/true peak, resolution, every script line spoken as written, the user's brief targets. Read `<video>.qa/report.md`; a FAIL blocks delivery. Its "a human must still check" list goes into the delivery message.
+- **After every render or AI-clip assembly:** `python tools/quality_gate.py out/<video>.mp4 [--script script.txt --speech] [--brief brief.json] [--ref <ref>/fingerprint.json]`. It measures, it does not guess: picture shorter than sound (FAIL), hook motion in 0-2 s, near-still share and static shots, same framing back to back, one-frame pops, black/frozen stretches, silences, burned-in text (Apple Vision OCR on macOS), loudness/true peak, resolution, every script line spoken as written, the user's brief targets. Read `<video>.qa/report.md`; a FAIL blocks delivery: fix it and gate again. Its "a human must still check" list goes into the delivery message.
+- **Exact defects** (inside `quality_gate.py`, or alone: `python tools/defects.py <video>`): more than 3 flashes a second over a quarter of the frame (WCAG 2.3.1 - a seizure risk; a strobe the user asks for is kept under the limit), clipped / flat-topped audio, audio dropouts.
+- **The user's taste rules** (`knowledge/taste.json`, plus a video's own `taste.json` via `--taste`): measured ones become findings tagged `taste:<id>`; the rest are listed under "A human must still check" and are looked at on every draft. `python tools/taste.py list` shows them.
+- **Cut chain** (when the plan has one): `python tools/cut_chain.py check chain.json` on paper, `verify chain.json <render>` after the render (where the eye really is around each cut).
 - **Trust the analysers only after** `python tools/analysis_selftest.py` passes (8/8) on this machine and after any analyser change.
 0. On a fresh PC first `node tools/smoke.mjs` (render pipeline works without a TTS engine).
 1. `npx tsc --noEmit` clean · `python tools/blank_start.py <name>` reports 0 blank starts · `python tools/check_anchors.py <name>` clean (scene count = paragraph count; anchor words spoken).
@@ -25,16 +28,18 @@ Answer six questions from the gate report, the contact sheet and at most three f
 4. **Weakest 5 seconds** - where and why (still, repeated, unclear, too long, dead air)?
 5. **Sound on the picture** - do the three biggest cuts/impacts have their sound?
 6. **Words** - does a line read as machine-written (`words_check.py --line`)? Is every scripted line spoken?
+Rate each answer on five steps (poor · weak · fine · strong · excellent), judged for THIS video's audience and goal, not videos in general. Every answer below "fine" becomes a finding: the timecode, what the viewer meets there, and the move that fixes it (`docs/moves.md`). Name the **strongest moment** too: it is locked, so polishing does not wear it down.
 Then ONE honest score (5 student, 6 template, 7 solid professional, 8 agency, 9 award shortlist; first drafts usually 5-7) and at most THREE fixes, biggest first, each a timecode + what changes in numbers; at least one fix raises the wow, not only polish. Ask which fixes to apply (all three recommended); the chosen ones become `R1..Rn` below.
 
 ## Revision protocol (details in CLAUDE.md §6)
 0. What the user praised is locked: fixes and re-plans keep it. Notes are saved verbatim per round in `REVISIONS.md`. A defect is diagnosed on a few test frames before anything is rebuilt.
-1. Write the numbered change list `R1..Rn` with the targets (scene numbers / script lines / voice / music / thumbnail / title) and whether timing changes.
+1. Split every note into its **asks** (one note often holds several) and write the numbered change list `R1..Rn`, one line per ask: the target (scene numbers / script lines / voice / music / thumbnail / title), the **move** it calls for (`docs/moves.md`: quieter, bolder, retime, recut, clarify, regrade, retype, reframe, simplify, polish, liven, restructure), what it **keeps** (everything the note does not name stays as it is: write it down, e.g. "R2 music quieter - keeps the track, the hits and the timing"), the medium the user named (a 2D title stays 2D), and whether timing changes.
+1b. Give each ask a way to see it was met: a measured check (a `taste.json` rule when the ask should hold for every future video - CLAUDE.md §6) or a before/after still the user can confirm. Nothing is edited while an ask has neither.
 2. Ask only about ambiguous or user-owned items.
 3. Edit source files only (script.txt, scenes.json, video.json, thumb.json); never edit timing.json by hand.
 4. Cheapest redo path: text change → re-narrate + anchors + stills + render; visual change → stills of those scenes + render; audio-only change → render with new mix (or remux); packaging change → stills only.
 5. Keep versions (`-v1-final`, `-v2-final`), append to `REVISIONS.md`, re-run the gates the change can break (always `quality_gate.py`), report verified vs not verified.
-6. If the user's change contradicts a guideline, do it and note the trade-off once.
+6. If the user's change contradicts a guideline, do it and note the trade-off once (one line, no second objection).
 
 ## Common fixes
 - A figure overlapping text → move the text or use `s` smaller; ground label overlapping the ground line → drop `label`.

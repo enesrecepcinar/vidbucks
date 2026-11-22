@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 """gates.py - three cheap approvals before an expensive build: STORY -> LOOK -> BOARD. Nothing is fully rendered
-until all three are approved by the user (a wrong story or look costs a whole build; a text table costs a minute).
+until all three are approved, or waived, by the user (a wrong story or look costs a whole build; a text table costs a minute).
 
   python tools/gates.py story   <project_dir>                       # story.json -> STORY.md (the beat table to show)
   python tools/gates.py look    <project_dir> --comp <Id> --at 2.2,9.7,16.5 [--props props.json]   # 2-4 full style frames -> look.jpg
   python tools/gates.py board   <project_dir> --comp <Id> [--props props.json]                     # one panel per beat -> board.jpg
   python tools/gates.py approve <project_dir> story|look|board [--notes "..."] [--panels-down 3,7]
   python tools/gates.py status  <project_dir>
-  python tools/gates.py check   <project_dir>                       # exit 1 unless all three are approved (run before a full render)
+  python tools/gates.py check   <project_dir>                       # exit 1 unless all three are approved or waived (run before a full render)
+  python tools/gates.py waive   <project_dir> [story look board] [--notes "..."]   # the user skips gates (all when none named)
 
 story.json: {"title", "idea": one line, "device": the sayable device, "format", "style", "length_s", "bpm"?,
   "beats": [{"t": 0.0, "title": "...", "what": "what we see / hear", "bridge": "how it joins the next beat", "sound": "role of the sound: silence, the loudest hit, a riser ..."}]}
@@ -62,7 +63,7 @@ def sheet(paths, labels, out, cols, title=None):
 
 def cmd_look(a):
     pd = pathlib.Path(a.dir); s = reopen_if_changed(pd, state(pd))
-    if s["story"]["status"] != "approved": raise SystemExit("story gate is not approved yet: show STORY.md first")
+    if s["story"]["status"] not in ("approved", "waived"): print("note: the story gate is not approved yet (showing the look anyway)")
     fps = 30; ts = [float(x) for x in a.at.split(",")]; outs = []
     for k, t in enumerate(ts):
         o = pd / f"look_{k}.png"; still(a.comp, int(round(t * fps)), o, a.props, 0.5); outs.append(o)
@@ -72,7 +73,7 @@ def cmd_look(a):
 
 def cmd_board(a):
     pd = pathlib.Path(a.dir); s = reopen_if_changed(pd, state(pd))
-    if s["look"]["status"] != "approved": raise SystemExit("look gate is not approved yet")
+    if s["look"]["status"] not in ("approved", "waived"): print("note: the look gate is not approved yet (drawing the board anyway)")
     S = json.loads((pd / "story.json").read_text()); fps = 30; outs, labs = [], []
     ends = [b["t"] for b in S["beats"][1:]] + [S.get("length_s", S["beats"][-1]["t"] + 4)]
     for i, (b, e) in enumerate(zip(S["beats"], ends), 1):
@@ -86,7 +87,7 @@ def cmd_board(a):
 def cmd_approve(a):
     pd = pathlib.Path(a.dir); s = reopen_if_changed(pd, state(pd)); g = a.gate
     prev = ORDER[: ORDER.index(g)]
-    if any(s[p]["status"] != "approved" for p in prev): raise SystemExit(f"approve {', '.join(prev)} first")
+    if any(s[p]["status"] not in ("approved", "waived") for p in prev): print(f"note: {', '.join(prev)} not approved yet; recording this approval anyway")
     if a.panels_down:
         s[g] = {**s[g], "status": "changes", "panels_down": [int(x) for x in a.panels_down.split(",")], "notes": a.notes}
         save(pd, s); print(f"{g}: panels {a.panels_down} down -> redraw them, show the board again"); return
@@ -100,19 +101,28 @@ def cmd_status(a):
 
 def cmd_check(a):
     pd = pathlib.Path(a.dir); s = reopen_if_changed(pd, state(pd))
-    missing = [g for g in ORDER if s[g]["status"] != "approved"]
+    missing = [g for g in ORDER if s[g]["status"] not in ("approved", "waived")]
     if missing: print("GATES CLOSED: " + ", ".join(f"{g} ({s[g]['status']})" for g in missing) + " -> no full render yet"); sys.exit(1)
-    print("GATES OPEN: story, look and board approved")
+    print("GATES OPEN: " + ", ".join(f"{g} {s[g]['status']}" for g in ORDER))
+
+def cmd_waive(a):
+    """The user skips gates (all, or the ones named): the render may go ahead; the note says who decided."""
+    pd = pathlib.Path(a.dir); s = reopen_if_changed(pd, state(pd))
+    for g in (a.gates or ORDER):
+        s[g] = {**s[g], "status": "waived", "notes": a.notes or "skipped by the user", "waived_at": datetime.datetime.now().isoformat(timespec="seconds")}
+        if g == "story" and (pd / "story.json").exists(): s[g]["hash"] = story_hash(pd)
+    save(pd, s); print("waived:", ", ".join(a.gates or ORDER))
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter); sp = ap.add_subparsers(dest="cmd", required=True)
-    for n in ("story", "look", "board", "approve", "status", "check"):
+    for n in ("story", "look", "board", "approve", "status", "check", "waive"):
         p = sp.add_parser(n); p.add_argument("dir")
         if n in ("look", "board"): p.add_argument("--comp", required=True); p.add_argument("--props")
         if n == "look": p.add_argument("--at", required=True)
+        if n == "waive": p.add_argument("gates", nargs="*", choices=ORDER); p.add_argument("--notes", default="")
         if n == "approve": p.add_argument("gate", choices=ORDER); p.add_argument("--notes", default=""); p.add_argument("--panels-down")
     a = ap.parse_args()
-    {"story": cmd_story, "look": cmd_look, "board": cmd_board, "approve": cmd_approve, "status": cmd_status, "check": cmd_check}[a.cmd](a)
+    {"story": cmd_story, "look": cmd_look, "board": cmd_board, "approve": cmd_approve, "status": cmd_status, "check": cmd_check, "waive": cmd_waive}[a.cmd](a)
 
 if __name__ == "__main__":
     main()

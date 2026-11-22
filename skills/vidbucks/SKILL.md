@@ -5,7 +5,7 @@ description: Entry point of Vidbucks. Use whenever the user wants to make, plan,
 
 # vidbucks (entry)
 
-1. Locate Vidbucks home: the folder with `CLAUDE.md` + `core/tools/doctor.mjs` + `scripts/status.mjs` (cwd, `$VIDBUCKS_HOME`, or the path in `~/.vidbucks/home` / `PACKAGE_PATH.txt` next to this skill). Run `node scripts/status.mjs`. Read `CLAUDE.md` completely - it is the law (golden path, autonomy and hard rules, routes, long-form pipeline, revision protocol). Then read `knowledge/learned.md`.
+1. Locate Vidbucks home: the folder with `CLAUDE.md` + `core/tools/doctor.mjs` + `scripts/status.mjs` (cwd, `$VIDBUCKS_HOME`, or the path in `~/.vidbucks/home` / `PACKAGE_PATH.txt` next to this skill). Run `node scripts/status.mjs`. Read `CLAUDE.md` completely - it is the law (golden path, autonomy and user-decides rules, routes, long-form pipeline, revision protocol). Then read `knowledge/learned.md`.
 2. Status `needs_setup` / `needs_smoke_test` -> skill `vidbucks-setup` until the smoke test passes, then it announces readiness and asks for the reference video. Status `ready` -> continue.
 3. Work in progress? `core/videos/*/STATUS.md`. Resume instead of restarting.
 4. **Any reference or style wish (link, mp4, screenshots, "like this", a promo/short/reel)** -> skill **`vidbucks-reference-to-video`**. Do not ask the user for reference images, photos or analysis; ask only user-owned decisions.

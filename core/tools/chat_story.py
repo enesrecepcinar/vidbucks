@@ -12,7 +12,7 @@ The thread plays as a drip, one message at a time: a read-gap after each bubble 
 the composer types every sent message before it goes (14 chars/s, max 1.8 s). With --tts each message is also spoken (one
 Kokoro voice per side) and the thread waits for the voice; the timed file gets "voice": [start, end] per message and the
 audio is one wav on the video timeline. Everything after this (picture, cues) reads the timed file, so they cannot drift.
-Fictional only: never put real people's messages or names in a chat story."""
+Fictional by default; real messages or names only when the user supplies them and says so (then they are labelled as real)."""
 import argparse, json, pathlib, sys
 
 ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
