@@ -18,3 +18,6 @@ Public channel pages, video lists, titles, durations, view counts, upload dates,
 5. **Transfer rules:** copy structure; change topic, examples, voice, art; by default no copied title text, channel history, real faces, logos or footage (the user can ask otherwise; say the trade-off once).
 6. **Write** from the skeletons in `knowledge/templates/` (`channel-study.template.md`, `style.template.json`) into `knowledge/channel-studies/<channel>.md`, `knowledge/style-briefs/<channel>.style.json` and `knowledge/beat-sheets/<channel>.md` (create the folders when needed); add the archetype to `knowledge/channel-style-library.md` if it is new. Read the library first - the style may already be there.
 7. **Confidence statement:** which numbers are measured, which are inferred, which are unknown.
+
+## Fast numbers first
+Before studying a channel or choosing a niche, run `python core/tools/yt_research.py channel <@handle>` (median, outliers against its own median, reused title formats and their decay) and `yt_research.py niche "<topic>"` / `similar <@handle>` for the field around it (`docs/research.md`). No credits are needed; revenue/RPM stay estimates of the paid tools.
