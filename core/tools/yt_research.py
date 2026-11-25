@@ -14,6 +14,7 @@ exact publish dates and view counts replace the approximate "3 weeks ago" values
   python tools/yt_research.py channel @WhereTheyStood [--videos 120]
   python tools/yt_research.py outliers "tornado documentary" [--min-score 3] [--period month]
   python tools/yt_research.py similar @youSeeWhyOfficial
+  python tools/yt_research.py fresh --seeds seeds.txt --max-age 45     # channels opened in the last 45 days that already pull views
 
 Output: .vidbucks/research/yt/<slug>/ -> report.md (read this), channels.csv, videos.csv, data.json. Cache: .vidbucks/research/yt_cache.sqlite.
 Numbers are measured from public pages; "~" dates come from "N weeks ago" text unless the API key refined them.
@@ -434,7 +435,8 @@ def run_channel(a):
          f"- Median views {fmt(ch['median_views'])}, last 4 average {fmt(int(st.mean(last4))) if last4 else '-'}, views/sub {ch['views_per_sub']}, uploads/week {ch['uploads_per_week']}, avg length {ch['avg_minutes']} min, shorts share {ch['shorts_share']}",
          f"- Variation (coefficient): {round(st.pstdev([v['views'] for v in vids if v.get('views')]) / max(1, st.mean([v['views'] for v in vids if v.get('views')])), 2) if vids else '-'}", "",
          "## Best and worst against the channel's own median", "| score | views | published | title |", "|---|---|---|---|"]
-    for v in sorted(vids, key=lambda v: -(v.get("score") or 0))[:12] + sorted(vids, key=lambda v: (v.get("score") or 0))[:5]:
+    best = sorted(vids, key=lambda v: -(v.get("score") or 0))[:12]
+    for v in best + [v for v in sorted(vids, key=lambda v: (v.get("score") or 0))[:5] if v not in best]:
         L.append(f"| {v.get('score')}x | {fmt(v.get('views'))} | {v.get('published') or '-'} | [{v['title'][:80]}](https://youtu.be/{v['id']}) |")
     rep = [(k, vs) for k, vs in sk.items() if len(vs) >= 3]
     if rep:
@@ -476,6 +478,54 @@ def slug(s):
     return re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")[:60] or "research"
 
 
+def run_fresh(a):
+    """breakout channels: opened in the last N days and already pulling views. Search many seed phrases for videos uploaded
+    this week/month (sorted by views), then keep the channels whose join date is recent."""
+    t0 = time.time()
+    seeds = [q.strip() for q in (open(a.seeds).read().splitlines() if a.seeds and os.path.exists(a.seeds) else (a.seeds or "").split(",")) if q.strip() and not q.startswith("#")]
+    jobs = [(q, per) for q in seeds for per in a.periods.split(",")]
+    found = []
+    with cf.ThreadPoolExecutor(8) as ex:
+        for q, res in zip(jobs, ex.map(lambda j: _safe_search(j[0], "views", j[1], a.pages), jobs)):
+            for v in res: v["seed"] = q[0]
+            found += res
+    by = {}
+    for v in found: by.setdefault(v["channel_id"], []).append(v)
+    # cheap pre-filter: a channel whose best hit is young and strong is worth one page fetch
+    cand = [c for c, vs in by.items() if max((v.get("views") or 0) for v in vs) >= a.min_views]
+    print(f"search: {len(found)} results from {len(jobs)} searches, {len(by)} channels, {len(cand)} with a {fmt(a.min_views)}+ video ({time.time() - t0:.1f}s)")
+    abouts = {}
+    with cf.ThreadPoolExecutor(10) as ex:
+        for cid, ab in zip(cand, ex.map(channel_about, cand)): abouts[cid] = ab
+    young = [c for c in cand if (abouts[c].get("joined") and re.match(r"\d{4}-", abouts[c]["joined"]) and (NOW.date() - dt.date.fromisoformat(abouts[c]["joined"])).days <= a.max_age)]
+    print(f"joined in the last {a.max_age} days: {len(young)}; measuring them...")
+    data = gather_channels(young, a.videos)
+    channels, videos = [], []
+    for cid, (info, vids, about) in data.items():
+        ch = score_channel(info, vids, {**about, **abouts.get(cid, {})}); ch["seeds"] = sorted({v["seed"] for v in by[cid]})
+        ch["total_views_est"] = about.get("total_views") or sum(v.get("views") or 0 for v in vids)
+        channels.append(ch)
+        for v in vids: v["channel"] = info.get("title")
+        videos += vids
+    channels.sort(key=lambda c: -(c.get("total_views_est") or 0))
+    L = [f"# Breakout channels: joined in the last {a.max_age} days", "", f"Fetched {NOW.date()}. {len(jobs)} searches over {len(seeds)} seed phrases ({a.periods}), sorted by views; channels with a {fmt(a.min_views)}+ video and a join date within {a.max_age} days.", "",
+         "| channel | joined | subs | total views | videos | median views | best video | avg min | shorts | country | found by |", "|---|---|---|---|---|---|---|---|---|---|---|"]
+    for c in channels:
+        best = max((v for v in videos if v["channel_id"] == c["id"]), key=lambda v: v.get("views") or 0, default=None)
+        L.append(f"| [{c.get('title')}](https://www.youtube.com/channel/{c['id']}) | {c.get('joined')} | {fmt(c.get('subs'))} | {fmt(c.get('total_views_est'))} | {c.get('video_count') or c.get('sampled')} | {fmt(c.get('median_views'))} | "
+                 + (f"[{fmt(best.get('views'))}](https://youtu.be/{best['id']}) {best['title'][:50]}" if best else "-") + f" | {c.get('avg_minutes') or '-'} | {int(100 * (c.get('shorts_share') or 0))} % | {c.get('country') or '-'} | {', '.join(c['seeds'])[:60]} |")
+    L += ["", "## Not measured", "Revenue, monetisation and audience are private; join date and totals come from the channel page; video dates are approximate."]
+    d = save("fresh-" + slug(a.name), "Breakout channels", channels, videos, [], "\n".join(L) + "\n")
+    print(f"done in {time.time() - t0:.1f}s -> {d}/report.md")
+
+
+def _safe_search(q, sort, period, pages):
+    try:
+        return search(q, sort, period, pages)
+    except Exception:
+        return []
+
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -487,5 +537,9 @@ if __name__ == "__main__":
         p.add_argument("--min-relevance", type=float, default=0.15, help="share of a channel's titles that must match the niche (channels with 2+ search hits always stay)")
     p = sub.add_parser("channel"); p.add_argument("ref"); p.add_argument("--videos", type=int, default=90); p.add_argument("--api", action="store_true")
     p = sub.add_parser("similar"); p.add_argument("ref"); p.add_argument("--channels", type=int, default=15)
+    p = sub.add_parser("fresh", help="channels opened in the last N days that already pull views")
+    p.add_argument("--seeds", required=True, help="comma-separated phrases or a text file with one phrase per line"); p.add_argument("--name", default="seeds")
+    p.add_argument("--max-age", type=int, default=45); p.add_argument("--periods", default="week,month"); p.add_argument("--pages", type=int, default=2)
+    p.add_argument("--min-views", type=int, default=20000); p.add_argument("--videos", type=int, default=30)
     a = ap.parse_args()
-    {"niche": lambda: run_niche(a), "outliers": lambda: run_niche(a, True), "channel": lambda: run_channel(a), "similar": lambda: run_similar(a)}[a.cmd]()
+    {"niche": lambda: run_niche(a), "outliers": lambda: run_niche(a, True), "channel": lambda: run_channel(a), "similar": lambda: run_similar(a), "fresh": lambda: run_fresh(a)}[a.cmd]()

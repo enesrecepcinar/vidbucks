@@ -15,12 +15,14 @@ python tools/yt_research.py niche "abandoned military bases" --also "cold war bu
 python tools/yt_research.py outliers "tornado documentary" --period year
 python tools/yt_research.py channel @WhereTheyStood
 python tools/yt_research.py similar @WhereTheyStood
+python tools/yt_research.py fresh --seeds seeds.txt --max-age 45   # channels opened in the last 45 days that already pull views
 ```
 
 - `niche`: searches every phrase sorted by views, relevance and date (4 pages each), keeps the real result list (not the "people also watched" shelves), keeps channels whose titles are about the niche (half of a phrase's words, generic words such as "documentary" ignored), measures their latest uploads and pages, and ranks **opportunity channels** (young + views above subscribers + repeatable outliers, weighted by how on-topic the channel is), **top outliers** (views / that channel's median, at least 10K views), the phrases and title shapes outliers share, and growth since the last run.
 - `outliers`: the same with the outlier table only, filtered to the period.
 - `channel`: one channel's median, last-4 average, variation, best and worst videos against its own median, and title formats it reused 3+ times with their views oldest to newest (the decay pattern).
 - `similar`: channels that rank for the same searches as its best videos.
+- `fresh`: breakout channels. Searches many style phrases for videos uploaded this week and this month (sorted by views), keeps channels with a `--min-views` video, reads each channel page's join date and keeps those opened within `--max-age` days, then measures them (subs, total views, median, best video, length, shorts share, country). 43 phrases take about a minute.
 - `--api` (with `doctor.mjs --set YOUTUBE_API_KEY=...`, free): exact publish dates and view counts, 1 quota unit per 50 videos.
 
 Outputs: `.vidbucks/research/yt/<slug>/report.md` (read this), `channels.csv`, `videos.csv`, `data.json`; every run is stored in `.vidbucks/research/yt_cache.sqlite`, so the next run of the same niche shows views per day.
