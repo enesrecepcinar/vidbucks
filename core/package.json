@@ -10,19 +10,19 @@
   "license": "MIT",
   "private": true,
   "dependencies": {
-    "@remotion/cli": "4.0.532",
-    "@remotion/google-fonts": "4.0.532",
-    "@remotion/media": "4.0.532",
-    "react": "19.2.3",
-    "react-dom": "19.2.3",
-    "remotion": "4.0.532"
+    "@remotion/cli": "4.0.547",
+    "@remotion/google-fonts": "4.0.547",
+    "@remotion/media": "4.0.547",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "remotion": "4.0.547"
   },
   "devDependencies": {
-    "@remotion/eslint-config-flat": "4.0.532",
-    "@types/react": "19.2.7",
+    "@remotion/eslint-config-flat": "4.0.547",
+    "@types/react": "19.3.3",
     "@types/web": "0.0.166",
     "eslint": "9.39.5",
-    "prettier": "3.8.1",
+    "prettier": "3.10.1",
     "typescript": "5.9.3"
   },
   "scripts": {
